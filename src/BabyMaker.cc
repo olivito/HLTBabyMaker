@@ -104,6 +104,8 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     for(edm::View<reco::PFJet>::const_iterator jet_it = jet_h->begin(); jet_it != jet_h->end(); jet_it++){
 
+      if(jet_it->pt() < 20.0) continue;
+
       pfjets_pt  ->push_back(jet_it->pt());
       pfjets_eta ->push_back(jet_it->eta());
       pfjets_phi ->push_back(jet_it->phi());
