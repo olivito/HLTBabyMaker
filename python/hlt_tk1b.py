@@ -4105,6 +4105,7 @@ process.hltRHemisphere = cms.EDFilter( "HLTRHemisphere",
     maxNJ = cms.int32( 7 )
 )
 
+
 process.HLTL1UnpackerSequence = cms.Sequence( process.hltGtDigis + process.hltGctDigis + process.hltL1GtObjectMap + process.hltL1extraParticles )
 process.HLTBeamSpot = cms.Sequence( process.hltScalersRawToDigi + process.hltOnlineBeamSpot )
 process.HLTBeginSequence = cms.Sequence( process.hltTriggerType + process.HLTL1UnpackerSequence + process.HLTBeamSpot )
@@ -4145,6 +4146,8 @@ process.HLT_PFHTnocut_PFMETnocut_nocalocut_v1 = cms.Path( process.HLTBeginSequen
 #process.HLT_PFMET180_NoiseCleaned_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1ETM36ORETM40 + process.hltPrePFMET180NoiseCleaned + process.HLTRecoMETSequence + process.hltMET90 + process.HLTHBHENoiseCleanerSequence + process.hltMetClean + process.hltMETClean80 + process.HLTRecoJetSequenceAK4L1FastJetCorrected + process.hltMetCleanUsingJetID + process.hltMETCleanUsingJetID80 + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFMETProducer + process.hltPFMET180Filter + process.HLTEndSequence )
 #process.HLT_PFchMET90_NoiseCleaned_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1ETM36ORETM40 + process.hltPrePFchMET90NoiseCleaned + process.HLTRecoMETSequence + process.hltMET90 + process.HLTHBHENoiseCleanerSequence + process.hltMetClean + process.hltMETClean80 + process.HLTRecoJetSequenceAK4L1FastJetCorrected + process.hltMetCleanUsingJetID + process.hltMETCleanUsingJetID80 + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFchMETProducer + process.hltPFchMET90Filter + process.HLTEndSequence )
 
+
+process.HLT_L1HTT = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 )
 
 process.source = cms.Source( "PoolSource",
     fileNames = cms.untracked.vstring(
@@ -4215,7 +4218,11 @@ process.maxEvents = cms.untracked.PSet(
 process.out = cms.OutputModule(
         "PoolOutputModule",
         fileName     = cms.untracked.string('ntuple_hlt.root'),
-        dropMetaData = cms.untracked.string("NONE")
+        dropMetaData = cms.untracked.string("NONE"),
+        SelectEvents = cms.untracked.PSet(
+            SelectEvents = cms.vstring('HLT_L1HTT')
+        ),
+
 )
 process.outpath      = cms.EndPath(process.out)
 
