@@ -26,7 +26,7 @@ private:
     edm::InputTag pfMetInputTag;
     edm::InputTag pfHTInputTag;
     edm::InputTag hemInputTag;
-	  std::string aliasprefix_;
+    edm::InputTag genJetsInputTag;
     
 };
 

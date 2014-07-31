@@ -4,6 +4,8 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
+#include "DataFormats/JetReco/interface/GenJetCollection.h"
+#include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 
 #include "HLTStudy/HLTBabyMaker/interface/BabyMaker.h"
@@ -19,6 +21,10 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     produces<std::vector<float> > ("pfjetspt").setBranchAlias("pfjets_pt");
     produces<std::vector<float> > ("pfjetseta").setBranchAlias("pfjets_eta");
     produces<std::vector<float> > ("pfjetsphi").setBranchAlias("pfjets_phi");
+
+    produces<std::vector<float> > ("genjetspt").setBranchAlias("genjets_pt");
+    produces<std::vector<float> > ("genjetseta").setBranchAlias("genjets_eta");
+    produces<std::vector<float> > ("genjetsphi").setBranchAlias("genjets_phi");
 
     produces<float> ("metpt").setBranchAlias("met_pt");
     produces<float> ("meteta").setBranchAlias("met_eta");
@@ -46,6 +52,7 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     pfMetInputTag = iConfig.getParameter<edm::InputTag>("pfMetInputTag_");
     pfHTInputTag = iConfig.getParameter<edm::InputTag>("pfHTInputTag_");
     hemInputTag = iConfig.getParameter<edm::InputTag>("hemInputTag_");
+    genJetsInputTag = iConfig.getParameter<edm::InputTag>("genJetsInputTag_");
 }
 
 
@@ -64,6 +71,10 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     std::auto_ptr<std::vector<float> > pfjets_pt   (new std::vector<float>);
     std::auto_ptr<std::vector<float> > pfjets_eta  (new std::vector<float>);
     std::auto_ptr<std::vector<float> > pfjets_phi  (new std::vector<float>);
+
+    std::auto_ptr<std::vector<float> > genjets_pt   (new std::vector<float>);
+    std::auto_ptr<std::vector<float> > genjets_eta  (new std::vector<float>);
+    std::auto_ptr<std::vector<float> > genjets_phi  (new std::vector<float>);
 
     std::auto_ptr<float> met_pt   (new float);
     std::auto_ptr<float> met_eta  (new float);
@@ -99,6 +110,9 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     edm::Handle<std::vector<LorentzVector_> > hem_h;
     iEvent.getByLabel(hemInputTag, hem_h);
 
+    edm::Handle<edm::View<reco::GenJet> > genjet_h;
+    iEvent.getByLabel(genJetsInputTag, genjet_h);
+
     
     std::vector<LorentzVector> goodJets;
 
@@ -115,6 +129,16 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       if(goodJets.size() == 7) continue;
       goodJets.push_back(LorentzVector(jet_it->p4()));
   
+    } 
+
+    for(edm::View<reco::GenJet>::const_iterator genjet_it = genjet_h->begin(); genjet_it != genjet_h->end(); genjet_it++){
+
+      if(genjet_it->pt() < 20.0) continue;
+
+      genjets_pt  ->push_back(genjet_it->pt());
+      genjets_eta ->push_back(genjet_it->eta());
+      genjets_phi ->push_back(genjet_it->phi());
+
     } 
 
     *met_pt   = (met_h->front()).pt();
@@ -166,6 +190,10 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     iEvent.put(pfjets_pt,   "pfjetspt" );
     iEvent.put(pfjets_eta,  "pfjetseta" );
     iEvent.put(pfjets_phi,  "pfjetsphi" );
+
+    iEvent.put(genjets_pt,   "genjetspt" );
+    iEvent.put(genjets_eta,  "genjetseta" );
+    iEvent.put(genjets_phi,  "genjetsphi" );
 
     iEvent.put(met_pt,   "metpt" );
     iEvent.put(met_eta,  "meteta" );

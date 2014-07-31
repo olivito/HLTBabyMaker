@@ -4105,6 +4105,14 @@ process.hltRHemisphere = cms.EDFilter( "HLTRHemisphere",
     maxNJ = cms.int32( 7 )
 )
 
+process.load('RecoJets.Configuration.GenJetParticles_cff')
+process.load('RecoJets.Configuration.RecoGenJets_cff')
+
+process.antiktGenJets = cms.Sequence(
+    process.genParticlesForJetsNoNu*
+    process.ak4GenJetsNoNu
+)
+
 
 process.HLTL1UnpackerSequence = cms.Sequence( process.hltGtDigis + process.hltGctDigis + process.hltL1GtObjectMap + process.hltL1extraParticles )
 process.HLTBeamSpot = cms.Sequence( process.hltScalersRawToDigi + process.hltOnlineBeamSpot )
@@ -4142,7 +4150,7 @@ process.HLTRecoMETSequence = cms.Sequence( process.HLTDoCaloSequence + process.h
 process.HLTHBHENoiseCleanerSequence = cms.Sequence( process.hltHcalNoiseInfoProducer + process.hltHcalTowerNoiseCleaner )
 
 #process.HLT_PFHT650_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT650 + process.HLTRecoJetSequenceAK4L1FastJetCorrected + process.hltHtMht + process.hltHt550 + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFHT + process.hltPFHT650 + process.HLTEndSequence )
-process.HLT_PFHTnocut_PFMETnocut_nocalocut_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHTnocutPFMETnocutnocalocut + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFHT + process.hltPFMETProducer + process.hltPFchMETProducer + process.hltRHemisphere + process.HLTEndSequence + process.babyMaker)
+process.HLT_PFHTnocut_PFMETnocut_nocalocut_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHTnocutPFMETnocutnocalocut + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFHT + process.hltPFMETProducer + process.hltPFchMETProducer + process.hltRHemisphere + process.antiktGenJets + process.HLTEndSequence + process.babyMaker)
 #process.HLT_PFMET180_NoiseCleaned_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1ETM36ORETM40 + process.hltPrePFMET180NoiseCleaned + process.HLTRecoMETSequence + process.hltMET90 + process.HLTHBHENoiseCleanerSequence + process.hltMetClean + process.hltMETClean80 + process.HLTRecoJetSequenceAK4L1FastJetCorrected + process.hltMetCleanUsingJetID + process.hltMETCleanUsingJetID80 + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFMETProducer + process.hltPFMET180Filter + process.HLTEndSequence )
 #process.HLT_PFchMET90_NoiseCleaned_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1ETM36ORETM40 + process.hltPrePFchMET90NoiseCleaned + process.HLTRecoMETSequence + process.hltMET90 + process.HLTHBHENoiseCleanerSequence + process.hltMetClean + process.hltMETClean80 + process.HLTRecoJetSequenceAK4L1FastJetCorrected + process.hltMetCleanUsingJetID + process.hltMETCleanUsingJetID80 + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFchMETProducer + process.hltPFchMET90Filter + process.HLTEndSequence )
 
