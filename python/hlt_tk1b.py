@@ -558,6 +558,17 @@ process.hltHt550 = cms.EDFilter( "HLTHtMhtFilter",
     htLabels = cms.VInputTag( 'hltHtMht' ),
     minHt = cms.vdouble( 550.0 )
 )
+
+process.hltHt200 = cms.EDFilter( "HLTHtMhtFilter",
+    saveTags = cms.bool( False ),
+    mhtLabels = cms.VInputTag( 'hltHtMht' ),
+    meffSlope = cms.vdouble( 1.0 ),
+    minMeff = cms.vdouble( 0.0 ),
+    minMht = cms.vdouble( 0.0 ),
+    htLabels = cms.VInputTag( 'hltHtMht' ),
+    minHt = cms.vdouble( 200.0 )
+)
+
 process.hltTowerMakerForPF = cms.EDProducer( "CaloTowersCreator",
     EBSumThreshold = cms.double( 0.2 ),
     MomHBDepth = cms.double( 0.2 ),
@@ -4150,12 +4161,20 @@ process.HLTRecoMETSequence = cms.Sequence( process.HLTDoCaloSequence + process.h
 process.HLTHBHENoiseCleanerSequence = cms.Sequence( process.hltHcalNoiseInfoProducer + process.hltHcalTowerNoiseCleaner )
 
 #process.HLT_PFHT650_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHT650 + process.HLTRecoJetSequenceAK4L1FastJetCorrected + process.hltHtMht + process.hltHt550 + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFHT + process.hltPFHT650 + process.HLTEndSequence )
-process.HLT_PFHTnocut_PFMETnocut_nocalocut_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHTnocutPFMETnocutnocalocut + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFHT + process.hltPFMETProducer + process.hltPFchMETProducer + process.hltRHemisphere + process.antiktGenJets + process.HLTEndSequence + process.babyMaker)
+#process.HLT_PFHTnocut_PFMETnocut_nocalocut_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHTnocutPFMETnocutnocalocut + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFHT + process.hltPFMETProducer + process.hltPFchMETProducer + process.hltRHemisphere + process.antiktGenJets + process.HLTEndSequence + process.babyMaker)
+
+#process.HLT_PFHTnocut_PFMETnocut_nocalocut_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 + process.hltPrePFHTnocutPFMETnocutnocalocut + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFHT + process.hltPFMETProducer + process.hltPFchMETProducer + process.hltRHemisphere + process.antiktGenJets + process.HLTEndSequence + process.babyMaker)
+
 #process.HLT_PFMET180_NoiseCleaned_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1ETM36ORETM40 + process.hltPrePFMET180NoiseCleaned + process.HLTRecoMETSequence + process.hltMET90 + process.HLTHBHENoiseCleanerSequence + process.hltMetClean + process.hltMETClean80 + process.HLTRecoJetSequenceAK4L1FastJetCorrected + process.hltMetCleanUsingJetID + process.hltMETCleanUsingJetID80 + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFMETProducer + process.hltPFMET180Filter + process.HLTEndSequence )
 #process.HLT_PFchMET90_NoiseCleaned_v1 = cms.Path( process.HLTBeginSequence + process.hltL1sL1ETM36ORETM40 + process.hltPrePFchMET90NoiseCleaned + process.HLTRecoMETSequence + process.hltMET90 + process.HLTHBHENoiseCleanerSequence + process.hltMetClean + process.hltMETClean80 + process.HLTRecoJetSequenceAK4L1FastJetCorrected + process.hltMetCleanUsingJetID + process.hltMETCleanUsingJetID80 + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFchMETProducer + process.hltPFchMET90Filter + process.HLTEndSequence )
 
 
-process.HLT_L1HTT = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 )
+#process.HLT_L1HTT = cms.Path( process.HLTBeginSequence + process.hltL1sL1HTT150OrHTT175 )
+
+#process.HLT_jgran = cms.Path( process.HLTBeginSequence + process.hltPrePFHT650 + process.HLTRecoJetSequenceAK4L1FastJetCorrected + process.hltHtMht + process.hltHt200 + process.hltPrePFHTnocutPFMETnocutnocalocut + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFHT + process.hltPFMETProducer + process.hltPFchMETProducer + process.hltRHemisphere + process.antiktGenJets + process.HLTEndSequence + process.babyMaker)
+process.HLT_jgran = cms.Path( process.HLTBeginSequence + process.HLTRecoJetSequenceAK4L1FastJetCorrected + process.hltHtMht + process.hltHt200 + process.hltPrePFHTnocutPFMETnocutnocalocut + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFHT + process.hltPFMETProducer + process.antiktGenJets + process.HLTEndSequence + process.babyMaker)
+
+#process.HLT_jgran_noHT200Filter = cms.Path( process.HLTBeginSequence + process.HLTRecoJetSequenceAK4L1FastJetCorrected + process.hltHtMht + process.hltPrePFHTnocutPFMETnocutnocalocut + process.HLTPFL1FastL2L3ReconstructionSequence + process.hltPFHT + process.hltPFMETProducer + process.antiktGenJets + process.HLTEndSequence + process.babyMaker)
 
 process.source = cms.Source( "PoolSource",
     fileNames = cms.untracked.vstring(
@@ -4226,10 +4245,10 @@ process.maxEvents = cms.untracked.PSet(
 process.out = cms.OutputModule(
         "PoolOutputModule",
         fileName     = cms.untracked.string('ntuple_hlt.root'),
-        dropMetaData = cms.untracked.string("NONE"),
-        SelectEvents = cms.untracked.PSet(
-            SelectEvents = cms.vstring('HLT_L1HTT')
-        ),
+        dropMetaData = cms.untracked.string("NONE")
+        #SelectEvents = cms.untracked.PSet(
+            #SelectEvents = cms.vstring('HLT_L1HTT')
+        #),
 
 )
 process.outpath      = cms.EndPath(process.out)

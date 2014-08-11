@@ -25,8 +25,10 @@ private:
     edm::InputTag pfJetsInputTag;
     edm::InputTag pfMetInputTag;
     edm::InputTag pfHTInputTag;
+    edm::InputTag caloHTInputTag;
     edm::InputTag hemInputTag;
     edm::InputTag genJetsInputTag;
+    edm::InputTag caloJetsInputTag;
     
 };
 

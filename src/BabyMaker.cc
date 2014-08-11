@@ -4,8 +4,8 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "DataFormats/JetReco/interface/PFJet.h"
-#include "DataFormats/JetReco/interface/GenJetCollection.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
+#include "DataFormats/JetReco/interface/CaloJet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
 
 #include "HLTStudy/HLTBabyMaker/interface/BabyMaker.h"
@@ -26,14 +26,26 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     produces<std::vector<float> > ("genjetseta").setBranchAlias("genjets_eta");
     produces<std::vector<float> > ("genjetsphi").setBranchAlias("genjets_phi");
 
+    produces<std::vector<float> > ("calojetspt").setBranchAlias("calojets_pt");
+    produces<std::vector<float> > ("calojetseta").setBranchAlias("calojets_eta");
+    produces<std::vector<float> > ("calojetsphi").setBranchAlias("calojets_phi");
+
     produces<float> ("metpt").setBranchAlias("met_pt");
     produces<float> ("meteta").setBranchAlias("met_eta");
     produces<float> ("metphi").setBranchAlias("met_phi");
 
-    produces<float> ("htpt").setBranchAlias("ht_pt");
-    produces<float> ("hteta").setBranchAlias("ht_eta");
-    produces<float> ("htphi").setBranchAlias("ht_phi");
+    produces<float> ("pfht").setBranchAlias("pf_ht");
+    produces<float> ("caloht").setBranchAlias("calo_ht");
 
+    produces<float> ("pfmhtpt").setBranchAlias("pf_mht_pt");
+    produces<float> ("pfmhteta").setBranchAlias("pf_mht_eta");
+    produces<float> ("pfmhtphi").setBranchAlias("pf_mht_phi");
+
+    produces<float> ("calomhtpt").setBranchAlias("calo_mht_pt");
+    produces<float> ("calomhteta").setBranchAlias("calo_mht_eta");
+    produces<float> ("calomhtphi").setBranchAlias("calo_mht_phi");
+
+/*
     produces<LorentzVector> ("hem1p4hlt").setBranchAlias("hem1_p4_hlt");
     produces<LorentzVector> ("hem2p4hlt").setBranchAlias("hem2_p4_hlt");
     produces<LorentzVector> ("hem1p4snt").setBranchAlias("hem1_p4_snt");
@@ -47,12 +59,17 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     produces<float> ("dPhiHemhlt").setBranchAlias("dPhiHem_hlt");
     produces<float> ("dPhiHemsnt").setBranchAlias("dPhiHem_snt");
     produces<float> ("dPhijj").setBranchAlias("dPhijj");
+*/
+
+    produces<float> ("scale1fb").setBranchAlias("scale1fb");
 
     pfJetsInputTag = iConfig.getParameter<edm::InputTag>("pfJetsInputTag_");
     pfMetInputTag = iConfig.getParameter<edm::InputTag>("pfMetInputTag_");
     pfHTInputTag = iConfig.getParameter<edm::InputTag>("pfHTInputTag_");
-    hemInputTag = iConfig.getParameter<edm::InputTag>("hemInputTag_");
+    caloHTInputTag = iConfig.getParameter<edm::InputTag>("caloHTInputTag_");
+    //hemInputTag = iConfig.getParameter<edm::InputTag>("hemInputTag_");
     genJetsInputTag = iConfig.getParameter<edm::InputTag>("genJetsInputTag_");
+    caloJetsInputTag = iConfig.getParameter<edm::InputTag>("caloJetsInputTag_");
 }
 
 
@@ -76,13 +93,24 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     std::auto_ptr<std::vector<float> > genjets_eta  (new std::vector<float>);
     std::auto_ptr<std::vector<float> > genjets_phi  (new std::vector<float>);
 
+    std::auto_ptr<std::vector<float> > calojets_pt   (new std::vector<float>);
+    std::auto_ptr<std::vector<float> > calojets_eta  (new std::vector<float>);
+    std::auto_ptr<std::vector<float> > calojets_phi  (new std::vector<float>);
+
     std::auto_ptr<float> met_pt   (new float);
     std::auto_ptr<float> met_eta  (new float);
     std::auto_ptr<float> met_phi  (new float);
 
-    std::auto_ptr<float> ht_pt   (new float);
-    std::auto_ptr<float> ht_eta  (new float);
-    std::auto_ptr<float> ht_phi  (new float);
+    std::auto_ptr<float> pf_ht   (new float);
+    std::auto_ptr<float> calo_ht   (new float);
+
+    std::auto_ptr<float> pf_mht_pt   (new float);
+    std::auto_ptr<float> pf_mht_eta   (new float);
+    std::auto_ptr<float> pf_mht_phi   (new float);
+
+    std::auto_ptr<float> calo_mht_pt   (new float);
+    std::auto_ptr<float> calo_mht_eta   (new float);
+    std::auto_ptr<float> calo_mht_phi   (new float);
 
     std::auto_ptr<LorentzVector> hem1_p4_hlt  (new LorentzVector);
     std::auto_ptr<LorentzVector> hem2_p4_hlt  (new LorentzVector);
@@ -98,33 +126,43 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     std::auto_ptr<float> dPhiHem_snt  (new float);
     std::auto_ptr<float> dPhijj       (new float);
 
+    std::auto_ptr<float> scale1fb     (new float);
+
     edm::Handle<edm::View<reco::PFJet> > jet_h;
     iEvent.getByLabel(pfJetsInputTag, jet_h);
 
-    edm::Handle<edm::View<reco::MET> > ht_h;
-    iEvent.getByLabel(pfHTInputTag, ht_h);
+    edm::Handle<edm::View<reco::MET> > pfht_h;
+    iEvent.getByLabel(pfHTInputTag, pfht_h);
+
+    edm::Handle<edm::View<reco::MET> > caloht_h;
+    iEvent.getByLabel(caloHTInputTag, caloht_h);
 
     edm::Handle<edm::View<reco::MET> > met_h;
     iEvent.getByLabel(pfMetInputTag, met_h);
 
-    edm::Handle<std::vector<LorentzVector_> > hem_h;
-    iEvent.getByLabel(hemInputTag, hem_h);
+    //edm::Handle<std::vector<LorentzVector_> > hem_h;
+    //iEvent.getByLabel(hemInputTag, hem_h);
 
     edm::Handle<edm::View<reco::GenJet> > genjet_h;
     iEvent.getByLabel(genJetsInputTag, genjet_h);
 
+    edm::Handle<edm::View<reco::CaloJet> > calojet_h;
+    iEvent.getByLabel(caloJetsInputTag, calojet_h);
+
+
+    *scale1fb = 1.0;
     
     std::vector<LorentzVector> goodJets;
 
     for(edm::View<reco::PFJet>::const_iterator jet_it = jet_h->begin(); jet_it != jet_h->end(); jet_it++){
 
-      if(jet_it->pt() < 20.0) continue;
+      if(jet_it->pt() < 35.0) continue;
 
       pfjets_pt  ->push_back(jet_it->pt());
       pfjets_eta ->push_back(jet_it->eta());
       pfjets_phi ->push_back(jet_it->phi());
 
-      if(jet_it->pt() < 40.0) continue;
+      if(jet_it->pt() < 35.0) continue;
       if(fabs(jet_it->eta()) > 3.0) continue;
       if(goodJets.size() == 7) continue;
       goodJets.push_back(LorentzVector(jet_it->p4()));
@@ -133,7 +171,7 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     for(edm::View<reco::GenJet>::const_iterator genjet_it = genjet_h->begin(); genjet_it != genjet_h->end(); genjet_it++){
 
-      if(genjet_it->pt() < 20.0) continue;
+      if(genjet_it->pt() < 35.0) continue;
 
       genjets_pt  ->push_back(genjet_it->pt());
       genjets_eta ->push_back(genjet_it->eta());
@@ -141,14 +179,32 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     } 
 
+    for(edm::View<reco::CaloJet>::const_iterator calojet_it = calojet_h->begin(); calojet_it != calojet_h->end(); calojet_it++){
+
+      if(calojet_it->pt() < 35.0) continue;
+
+      calojets_pt  ->push_back(calojet_it->pt());
+      calojets_eta ->push_back(calojet_it->eta());
+      calojets_phi ->push_back(calojet_it->phi());
+
+    } 
+
     *met_pt   = (met_h->front()).pt();
     *met_eta  = (met_h->front()).eta();
     *met_phi  = (met_h->front()).phi();
 
-    *ht_pt   = (ht_h->front()).pt();
-    *ht_eta  = (ht_h->front()).eta();
-    *ht_phi  = (ht_h->front()).phi();
+    *pf_ht    = (pfht_h->front()).sumEt();
+    *calo_ht  = (caloht_h->front()).sumEt();
 
+    *pf_mht_pt    = (pfht_h->front()).pt();
+    *pf_mht_eta   = (pfht_h->front()).eta();
+    *pf_mht_phi   = (pfht_h->front()).phi();
+
+    *calo_mht_pt    = (caloht_h->front()).pt();
+    *calo_mht_eta   = (caloht_h->front()).eta();
+    *calo_mht_phi   = (caloht_h->front()).phi();
+
+/*
     if(hem_h->size() > 1){
       *hem1_p4_hlt = hem_h->at(0);
       *hem2_p4_hlt = hem_h->at(1);
@@ -185,6 +241,7 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       *mt2_snt = -999.9;
       *dPhijj = -999.9;
     }
+*/
     
 
     iEvent.put(pfjets_pt,   "pfjetspt" );
@@ -195,14 +252,26 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     iEvent.put(genjets_eta,  "genjetseta" );
     iEvent.put(genjets_phi,  "genjetsphi" );
 
+    iEvent.put(calojets_pt,   "calojetspt" );
+    iEvent.put(calojets_eta,  "calojetseta" );
+    iEvent.put(calojets_phi,  "calojetsphi" );
+
     iEvent.put(met_pt,   "metpt" );
     iEvent.put(met_eta,  "meteta" );
     iEvent.put(met_phi,  "metphi" );
 
-    iEvent.put(ht_pt,   "htpt" );
-    iEvent.put(ht_eta,  "hteta" );
-    iEvent.put(ht_phi,  "htphi" );
+    iEvent.put(pf_ht,   "pfht" );
+    iEvent.put(calo_ht,   "caloht" );
 
+    iEvent.put(pf_mht_pt,   "pfmhtpt" );
+    iEvent.put(pf_mht_eta,  "pfmhteta" );
+    iEvent.put(pf_mht_phi,  "pfmhtphi" );
+
+    iEvent.put(calo_mht_pt,   "calomhtpt" );
+    iEvent.put(calo_mht_eta,  "calomhteta" );
+    iEvent.put(calo_mht_phi,  "calomhtphi" );
+
+/*
     iEvent.put(hem1_p4_hlt,  "hem1p4hlt" );
     iEvent.put(hem2_p4_hlt,  "hem2p4hlt" );
     iEvent.put(hem1_p4_snt,  "hem1p4snt" );
@@ -216,6 +285,9 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     iEvent.put(dPhiHem_hlt,  "dPhiHemhlt" );
     iEvent.put(dPhiHem_snt,  "dPhiHemsnt" );
     iEvent.put(dPhijj,  "dPhijj" );
+*/
+
+    iEvent.put(scale1fb,  "scale1fb" );
 }
 
 //define this as a plug-in
