@@ -1,5 +1,7 @@
 #include "tools.h"
 
+#include "TMath.h"
+
 using namespace std;
 
 namespace tools{
@@ -52,16 +54,25 @@ namespace tools{
 
   double DeltaR(const LorentzVector& p1, const LorentzVector& p2)
   { 
-      return ROOT::Math::VectorUtil::DeltaR(p1, p2); 
-      //float deta = p1.Eta()-p2.Eta();
-      //float dphi = DeltaPhi(p1.Phi(), p2.Phi());
-      //return sqrt(dphi*dphi + deta*deta);
+    return ROOT::Math::VectorUtil::DeltaR(p1, p2); 
   }
 
   double DeltaPhi(const LorentzVector& p1, const LorentzVector& p2)
   {
-      return ROOT::Math::VectorUtil::DeltaPhi(p1, p2); 
+    return ROOT::Math::VectorUtil::DeltaPhi(p1, p2); 
   }
 
+  float DeltaR(float eta1, float eta2, float phi1, float phi2){
+    float dEta = eta1 - eta2;
+    float dPhi = DeltaPhi(phi1, phi2);
+    return TMath::Sqrt(dEta*dEta + dPhi*dPhi);
+  }
+
+  float DeltaPhi(float phi1, float phi2){
+    float dPhi = phi1 - phi2;
+    while (dPhi  >  TMath::Pi()) dPhi -= 2*TMath::Pi();
+    while (dPhi <= -TMath::Pi()) dPhi += 2*TMath::Pi();
+    return fabs(dPhi);
+  }
 
 }

@@ -14,15 +14,17 @@
 #include "TTreeCache.h"
 
 // HLT
-//#include "HLT.cc"
 #include "HLT.h"
-//#include "Include.C"
 #include "tools.h"
+#include "tools.h"
+#include "MT2.h"
+#include "hemJet.h"
 
 using namespace std;
 using namespace tas;
 
 int ScanChain( TChain* chain, bool fast = true, int nEvents = -1) {
+
 
   // Benchmark
   TBenchmark *bmark = new TBenchmark();
@@ -30,6 +32,9 @@ int ScanChain( TChain* chain, bool fast = true, int nEvents = -1) {
 
   TH1F *h_ht   = new TH1F("h_ht", "PF H_{T}", 200,0,2000);
   TH1F *h_rate = new TH1F("h_rate", "HLT Rate (HTT200 L1 Seed, Calo Filter HT>200)", 200,0,2000);
+  TH1F *h_mt2   = new TH1F("h_mt2", "h_mt2", 20,0,200);
+  TH1F *h_pseudoMT2   = new TH1F("h_pseudoMT2", "h_pseudoMT2", 50,0,5000);
+  TH1F *h_dPhi_pseudojets   = new TH1F("h_dPhi_pseudojets", "h_dPhi_pseudojets", 10,2.2,3.2);
   TH1F *h_ht_njets4   = new TH1F("h_ht_njets4", "PF H_{T}", 200,0,2000);
   TH1F *h_rate_njets4 = new TH1F("h_rate_njets4", "HLT Rate (HTT200 L1 Seed, Calo Filter HT>200, >= 4PFJets)", 200,0,2000);
   TH1F *h_nGenJets = new TH1F("h_nGenJets", "nGenJets pt > 40, |eta| < 3.0", 8, 0, 8);
@@ -44,6 +49,16 @@ int ScanChain( TChain* chain, bool fast = true, int nEvents = -1) {
   TH2F *h_rate_2d_met100 = new TH2F("h_rate_2d_met100", "h_rate_2d_met100", 24, 800, 2000, 12, 400, 1000);
   TH2F *h_rate_2d_met150 = new TH2F("h_rate_2d_met150", "h_rate_2d_met150", 24, 800, 2000, 12, 400, 1000);
   TH2F *h_rate_2d_met200 = new TH2F("h_rate_2d_met200", "h_rate_2d_met200", 24, 800, 2000, 12, 400, 1000);
+  TH2F *h_dPhi_pseudojets_ht = new TH2F("h_dPhi_pseudojets_ht", "dPhi(pseudojets) vs H_{T}", 14, 800, 1500, 32, 0, 3.2);
+  TH2F *h_pseudoMT2_ht = new TH2F("h_pseudoMT2_ht", "pseudoMT2 vs H_{T}", 14, 800, 1500, 20, 0, 200);
+  TH2F *h_MT2_ht = new TH2F("h_MT2_ht", "MT2 vs H_{T}", 14, 800, 1500, 10, 0, 100);
+  TH2F *h_rate_dPhi_pseudojets_ht = new TH2F("h_rate_dPhi_pseudojets_ht", "dPhi(pseudojets) vs H_{T}", 14, 800, 1500, 32, 0, 3.2);
+  TH2F *h_rate_pseudoMT2_ht = new TH2F("h_rate_pseudoMT2_ht", "pseudoMT2 vs H_{T}", 14, 800, 1500, 20, 0, 200);
+  TH2F *h_rate_MT2_ht = new TH2F("h_rate_MT2_ht", "MT2 vs H_{T}", 14, 800, 1500, 10, 0, 100);
+
+  float mt2 = -999.9;
+  float dPhiHem = -999.9;
+  float pseudoMT2 = -999.9;
 
   // Loop over events to Analyze
   unsigned int nEventsTotal = 0;
@@ -112,28 +127,59 @@ int ScanChain( TChain* chain, bool fast = true, int nEvents = -1) {
 
       if(njets >= 4) tools::Fill1D(h_ht_njets4, pf_ht(), weight);
 
-      
-      if(hlt.met_pt() < 100) continue;
-      tools::Fill1D(h_ht_met100, hlt.pf_ht(), weight);
+      if(hlt.met_pt() > 100) tools::Fill1D(h_ht_met100, hlt.pf_ht(), weight);
+      if(hlt.met_pt() > 150) tools::Fill1D(h_ht_met150, hlt.pf_ht(), weight);
+      if(hlt.met_pt() > 200) tools::Fill1D(h_ht_met200, hlt.pf_ht(), weight);
 
-      if(hlt.met_pt() < 150) continue;
-      tools::Fill1D(h_ht_met150, hlt.pf_ht(), weight);
-      
-      if(hlt.met_pt() < 200) continue;
-      tools::Fill1D(h_ht_met200, hlt.pf_ht(), weight);
-      
 
-    }
+      std::vector<LorentzVector> pfjets_p4;
+
+      LorentzVector temp_p4;
+
+      for(int njet = 0; njet < hlt.pfjets_pt().size(); njet++){
+
+        if(hlt.pfjets_pt().at(njet) < 40.0) continue;
+        if(fabs(hlt.pfjets_eta().at(njet)) > 3.0) continue;
+
+        temp_p4.SetPx(hlt.pfjets_pt().at(njet)*TMath::Cos(hlt.pfjets_phi().at(njet)));
+        temp_p4.SetPy(hlt.pfjets_pt().at(njet)*TMath::Sin(hlt.pfjets_phi().at(njet)));
+        temp_p4.SetPz(hlt.pfjets_pt().at(njet)*TMath::SinH(hlt.pfjets_eta().at(njet)));
+  
+        pfjets_p4.push_back(temp_p4);
+
+      }
+
+
+      if(hlt.pf_ht() < 800.0) continue;
+
+      if(pfjets_p4.size() > 1) {
+        
+        std::vector<LorentzVector> hemJets = getHemJets(pfjets_p4);
+        mt2 = HemMT2(hlt.met_pt(), hlt.met_phi(), hemJets.at(0), hemJets.at(1));
+        dPhiHem = tools::DeltaPhi( hemJets.at(0).phi(), hemJets.at(1).phi() );
+        pseudoMT2 = hemJets.at(0).pt() * hemJets.at(1).pt() * (1 + std::cos(dPhiHem));
+
+
+        tools::Fill1D(h_dPhi_pseudojets, dPhiHem, weight);
+        tools::Fill1D(h_pseudoMT2, pseudoMT2, weight);
+        tools::Fill1D(h_mt2, mt2, weight);
+
+        tools::Fill2D(h_dPhi_pseudojets_ht, hlt.pf_ht(), dPhiHem, weight);
+        tools::Fill2D(h_pseudoMT2_ht, hlt.pf_ht(), pseudoMT2, weight);
+        tools::Fill2D(h_MT2_ht, hlt.pf_ht(), mt2, weight);
+      }
+
+
+    } //event loop
   
     // Clean Up
     delete tree;
     file->Close();
     delete file;
-  }
+  } //file loop
   if ( nEventsChain != nEventsTotal ) {
     cout << Form( "ERROR: number of events from files (%d) is not equal to total number of events (%d)", nEventsChain, nEventsTotal ) << endl;
   }
-
 
 
   //float lumi = 1.4e34 cm^-2 s^-1
@@ -183,6 +229,35 @@ int ScanChain( TChain* chain, bool fast = true, int nEvents = -1) {
   }
 
 
+  for(int i=0; i<h_rate_dPhi_pseudojets_ht->GetNbinsX(); i++){
+    for(int j=0; j<h_rate_dPhi_pseudojets_ht->GetNbinsY(); j++){
+      int lastx = h_dPhi_pseudojets_ht->GetXaxis()->GetLast();
+      int lasty = h_dPhi_pseudojets_ht->GetYaxis()->GetLast();
+      float Rate = lumi*h_dPhi_pseudojets_ht->Integral(i, lastx, j, lasty);
+      tools::Fill2D(h_rate_dPhi_pseudojets_ht, 50*i + 800, 0.1*j, Rate);
+    }
+  }
+
+  for(int i=0; i<h_rate_pseudoMT2_ht->GetNbinsX(); i++){
+    for(int j=0; j<h_rate_pseudoMT2_ht->GetNbinsY(); j++){
+      int lastx = h_pseudoMT2_ht->GetXaxis()->GetLast();
+      int lasty = h_pseudoMT2_ht->GetYaxis()->GetLast();
+      float Rate = lumi*h_pseudoMT2_ht->Integral(i, lastx, j, lasty);
+      tools::Fill2D(h_rate_pseudoMT2_ht, 50*i + 800, 10*j, Rate);
+    }
+  }
+
+  for(int i=0; i<h_rate_MT2_ht->GetNbinsX(); i++){
+    for(int j=0; j<h_rate_MT2_ht->GetNbinsY(); j++){
+      int lastx = h_MT2_ht->GetXaxis()->GetLast();
+      int lasty = h_MT2_ht->GetYaxis()->GetLast();
+      float Rate = lumi*h_MT2_ht->Integral(i, lastx, j, lasty);
+      tools::Fill2D(h_rate_MT2_ht, 50*i + 800, 10*j, Rate);
+    }
+  }
+
+
+
 
   TCanvas* c0 = new TCanvas;
 
@@ -198,6 +273,19 @@ int ScanChain( TChain* chain, bool fast = true, int nEvents = -1) {
   normalizer = 1.0/tools::GetYield(h_nPFJets);
   h_nPFJets->Scale(normalizer);
   c0->Print("h_nPFJets.pdf");
+
+  h_dPhi_pseudojets->GetXaxis()->SetTitle("dPhi(pseudojets)");
+  h_dPhi_pseudojets->GetYaxis()->SetTitle("Events/0.1");
+  h_dPhi_pseudojets->Draw();
+  c0->Print("h_dPhi_pseudojets.pdf");
+  h_pseudoMT2->GetYaxis()->SetTitle("Events/100 GeV");
+  h_pseudoMT2->GetXaxis()->SetTitle("pseudo MT2 [GeV]");
+  h_pseudoMT2->Draw();
+  c0->Print("h_pseudoMT2.pdf");
+  h_mt2->GetYaxis()->SetTitle("Events/10 GeV");
+  h_mt2->GetXaxis()->SetTitle("MT2 [GeV]");
+  h_mt2->Draw();
+  c0->Print("h_mt2.pdf");
 
 
   h_rate_2d_met100->GetXaxis()->SetTitle("High H_{T} Threshold[GeV]");
@@ -229,6 +317,33 @@ int ScanChain( TChain* chain, bool fast = true, int nEvents = -1) {
   c0->Print("h_rate_met150.pdf");
   h_rate_met200->Draw();
   c0->Print("h_rate_met200.pdf");
+
+
+  h_dPhi_pseudojets_ht->GetXaxis()->SetTitle("H_{T} [GeV]");
+  h_dPhi_pseudojets_ht->GetYaxis()->SetTitle("dPhi(pseudojets)");
+  h_dPhi_pseudojets_ht->Draw("COLZ");
+  c0->Print("h_dPhi_pseudojets_ht.pdf");
+  h_pseudoMT2_ht->GetXaxis()->SetTitle("H_{T} [GeV]");
+  h_pseudoMT2_ht->GetYaxis()->SetTitle("pseudo MT2 [GeV]");
+  h_pseudoMT2_ht->Draw("COLZ");
+  c0->Print("h_pseudoMT2_ht.pdf");
+  h_MT2_ht->GetXaxis()->SetTitle("H_{T} [GeV]");
+  h_MT2_ht->GetYaxis()->SetTitle("MT2 [GeV]");
+  h_MT2_ht->Draw("COLZ");
+  c0->Print("h_MT2_ht.pdf");
+
+  h_rate_dPhi_pseudojets_ht->GetXaxis()->SetTitle("H_{T} Threshold [GeV]");
+  h_rate_dPhi_pseudojets_ht->GetYaxis()->SetTitle("dPhi(pseudojets) Threshold");
+  h_rate_dPhi_pseudojets_ht->Draw("COLZ");
+  c0->Print("h_rate_dPhi_pseudojets_ht.pdf");
+  h_rate_pseudoMT2_ht->GetXaxis()->SetTitle("H_{T} Threshold [GeV]");
+  h_rate_pseudoMT2_ht->GetYaxis()->SetTitle("pseudo MT2 Threshold [GeV]");
+  h_rate_pseudoMT2_ht->Draw("COLZ");
+  c0->Print("h_rate_pseudoMT2_ht.pdf");
+  h_rate_MT2_ht->GetXaxis()->SetTitle("H_{T} Threshold [GeV]");
+  h_rate_MT2_ht->GetYaxis()->SetTitle("MT2 Threshold [GeV]");
+  h_rate_MT2_ht->Draw("COLZ");
+  c0->Print("h_rate_MT2_ht.pdf");
 
 
   delete c0;

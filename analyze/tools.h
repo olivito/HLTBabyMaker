@@ -1,9 +1,10 @@
-// C++ includes
+#ifndef TOOLS_H
+#define TOOLS_H
+
 #include <string>
 #include <vector>
 #include <iomanip>
 
-// ROOT includes
 #include "TROOT.h"
 #include "TFile.h"
 #include "TChain.h"
@@ -32,5 +33,10 @@ namespace tools{
   float GetValue(float xvalue, float yvalue, TH2F *&hist);
   double DeltaR(const LorentzVector& p1, const LorentzVector& p2);
   double DeltaPhi(const LorentzVector& p1, const LorentzVector& p2);
+  float DeltaR(float, float, float, float);
+  float DeltaPhi(float, float);
 
 }
+
+
+#endif
