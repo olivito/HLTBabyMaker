@@ -7,6 +7,7 @@
 #include "DataFormats/JetReco/interface/GenJet.h"
 #include "DataFormats/JetReco/interface/CaloJet.h"
 #include "DataFormats/PatCandidates/interface/MET.h"
+#include "DataFormats/METReco/interface/GenMET.h"
 
 #include "HLTStudy/HLTBabyMaker/interface/BabyMaker.h"
 #include "HLTStudy/HLTBabyMaker/interface/tools.h"
@@ -33,6 +34,9 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     produces<float> ("metpt").setBranchAlias("met_pt");
     produces<float> ("meteta").setBranchAlias("met_eta");
     produces<float> ("metphi").setBranchAlias("met_phi");
+
+    produces<float> ("genmetpt").setBranchAlias("genmet_pt");
+    produces<float> ("genmetphi").setBranchAlias("genmet_phi");
 
     produces<float> ("pfht").setBranchAlias("pf_ht");
     produces<float> ("caloht").setBranchAlias("calo_ht");
@@ -70,6 +74,7 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     //hemInputTag = iConfig.getParameter<edm::InputTag>("hemInputTag_");
     genJetsInputTag = iConfig.getParameter<edm::InputTag>("genJetsInputTag_");
     caloJetsInputTag = iConfig.getParameter<edm::InputTag>("caloJetsInputTag_");
+    genMETInputTag = iConfig.getParameter<edm::InputTag>("genMETInputTag_");
 }
 
 
@@ -100,6 +105,9 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     std::auto_ptr<float> met_pt   (new float);
     std::auto_ptr<float> met_eta  (new float);
     std::auto_ptr<float> met_phi  (new float);
+
+    std::auto_ptr<float> genmet_pt   (new float);
+    std::auto_ptr<float> genmet_phi  (new float);
 
     std::auto_ptr<float> pf_ht   (new float);
     std::auto_ptr<float> calo_ht   (new float);
@@ -139,6 +147,9 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     edm::Handle<edm::View<reco::MET> > met_h;
     iEvent.getByLabel(pfMetInputTag, met_h);
+
+    edm::Handle<edm::View<reco::GenMET> > genmet_h;
+    iEvent.getByLabel(genMETInputTag, genmet_h);
 
     //edm::Handle<std::vector<LorentzVector_> > hem_h;
     //iEvent.getByLabel(hemInputTag, hem_h);
@@ -192,6 +203,9 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     *met_pt   = (met_h->front()).pt();
     *met_eta  = (met_h->front()).eta();
     *met_phi  = (met_h->front()).phi();
+
+    *genmet_pt   = (genmet_h->front()).pt();
+    *genmet_phi  = (genmet_h->front()).phi();
 
     *pf_ht    = (pfht_h->front()).sumEt();
     *calo_ht  = (caloht_h->front()).sumEt();
@@ -259,6 +273,9 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     iEvent.put(met_pt,   "metpt" );
     iEvent.put(met_eta,  "meteta" );
     iEvent.put(met_phi,  "metphi" );
+
+    iEvent.put(genmet_pt,   "genmetpt" );
+    iEvent.put(genmet_phi,  "genmetphi" );
 
     iEvent.put(pf_ht,   "pfht" );
     iEvent.put(calo_ht,   "caloht" );

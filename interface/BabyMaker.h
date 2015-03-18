@@ -29,6 +29,7 @@ private:
     edm::InputTag hemInputTag;
     edm::InputTag genJetsInputTag;
     edm::InputTag caloJetsInputTag;
+    edm::InputTag genMETInputTag;
     
 };
 

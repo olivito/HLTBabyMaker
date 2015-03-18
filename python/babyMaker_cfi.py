@@ -7,7 +7,8 @@ babyMaker = cms.EDProducer("BabyMaker",
                             caloHTInputTag_   = cms.InputTag("hltHtMht"),
                             hemInputTag_      = cms.InputTag("hltRHemisphere"),
                             genJetsInputTag_  = cms.InputTag("ak4GenJetsNoNu"),
-                            caloJetsInputTag_ = cms.InputTag("hltCaloJetL1FastJetCorrected")
+                            caloJetsInputTag_ = cms.InputTag("hltCaloJetL1FastJetCorrected"),
+                            genMETInputTag_  = cms.InputTag("genMetTrue"),
 )
 
 
