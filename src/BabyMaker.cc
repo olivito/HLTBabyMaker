@@ -32,8 +32,10 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     produces<std::vector<float> > ("calojetsphi").setBranchAlias("calojets_phi");
 
     produces<float> ("metpt").setBranchAlias("met_pt");
-    produces<float> ("meteta").setBranchAlias("met_eta");
     produces<float> ("metphi").setBranchAlias("met_phi");
+
+    produces<float> ("calometpt").setBranchAlias("calomet_pt");
+    produces<float> ("calometphi").setBranchAlias("calomet_phi");
 
     produces<float> ("genmetpt").setBranchAlias("genmet_pt");
     produces<float> ("genmetphi").setBranchAlias("genmet_phi");
@@ -70,6 +72,7 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     pfJetsInputTag = iConfig.getParameter<edm::InputTag>("pfJetsInputTag_");
     pfMetInputTag = iConfig.getParameter<edm::InputTag>("pfMetInputTag_");
     pfHTInputTag = iConfig.getParameter<edm::InputTag>("pfHTInputTag_");
+    caloMetInputTag = iConfig.getParameter<edm::InputTag>("caloMetInputTag_");
     caloHTInputTag = iConfig.getParameter<edm::InputTag>("caloHTInputTag_");
     //hemInputTag = iConfig.getParameter<edm::InputTag>("hemInputTag_");
     genJetsInputTag = iConfig.getParameter<edm::InputTag>("genJetsInputTag_");
@@ -103,8 +106,10 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     std::auto_ptr<std::vector<float> > calojets_phi  (new std::vector<float>);
 
     std::auto_ptr<float> met_pt   (new float);
-    std::auto_ptr<float> met_eta  (new float);
     std::auto_ptr<float> met_phi  (new float);
+
+    std::auto_ptr<float> calomet_pt   (new float);
+    std::auto_ptr<float> calomet_phi  (new float);
 
     std::auto_ptr<float> genmet_pt   (new float);
     std::auto_ptr<float> genmet_phi  (new float);
@@ -147,6 +152,9 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     edm::Handle<edm::View<reco::MET> > met_h;
     iEvent.getByLabel(pfMetInputTag, met_h);
+
+    edm::Handle<edm::View<reco::MET> > calomet_h;
+    iEvent.getByLabel(caloMetInputTag, calomet_h);
 
     edm::Handle<edm::View<reco::GenMET> > genmet_h;
     iEvent.getByLabel(genMETInputTag, genmet_h);
@@ -201,8 +209,10 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     } 
 
     *met_pt   = (met_h->front()).pt();
-    *met_eta  = (met_h->front()).eta();
     *met_phi  = (met_h->front()).phi();
+
+    *calomet_pt   = (calomet_h->front()).pt();
+    *calomet_phi  = (calomet_h->front()).phi();
 
     *genmet_pt   = (genmet_h->front()).pt();
     *genmet_phi  = (genmet_h->front()).phi();
@@ -271,8 +281,10 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     iEvent.put(calojets_phi,  "calojetsphi" );
 
     iEvent.put(met_pt,   "metpt" );
-    iEvent.put(met_eta,  "meteta" );
     iEvent.put(met_phi,  "metphi" );
+
+    iEvent.put(calomet_pt,   "calometpt" );
+    iEvent.put(calomet_phi,  "calometphi" );
 
     iEvent.put(genmet_pt,   "genmetpt" );
     iEvent.put(genmet_phi,  "genmetphi" );
