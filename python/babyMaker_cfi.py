@@ -1,14 +1,13 @@
 import FWCore.ParameterSet.Config as cms
 
 babyMaker = cms.EDProducer("BabyMaker",
-                            pfJetsInputTag_   = cms.InputTag("hltAK4PFJetL1FastL2L3Corrected"),
+                            pfJetsInputTag_   = cms.InputTag("hltAK4PFJetsCorrected"),
                             pfMetInputTag_    = cms.InputTag("hltPFMETProducer"),
                             pfHTInputTag_     = cms.InputTag("hltPFHT"),
                             caloMetInputTag_  = cms.InputTag("hltMet"),
                             caloHTInputTag_   = cms.InputTag("hltHtMht"),
-                            hemInputTag_      = cms.InputTag("hltRHemisphere"),
                             genJetsInputTag_  = cms.InputTag("ak4GenJetsNoNu"),
-                            caloJetsInputTag_ = cms.InputTag("hltCaloJetL1FastJetCorrected"),
+                            caloJetsInputTag_ = cms.InputTag("hltAK4CaloJetsCorrected"),
                             genMETInputTag_   = cms.InputTag("genMetTrue"),
 )
 

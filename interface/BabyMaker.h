@@ -11,6 +11,12 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "DataFormats/JetReco/interface/PFJet.h"
+#include "DataFormats/JetReco/interface/GenJet.h"
+#include "DataFormats/JetReco/interface/CaloJet.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
+#include "DataFormats/METReco/interface/GenMET.h"
+
 class BabyMaker : public edm::EDProducer {
 public:
     explicit BabyMaker (const edm::ParameterSet&);
@@ -22,15 +28,14 @@ private:
     virtual void endJob() ;
 
     // ----------member data ---------------------------
-    edm::InputTag pfJetsInputTag;
-    edm::InputTag pfMetInputTag;
-    edm::InputTag pfHTInputTag;
-    edm::InputTag caloMetInputTag;
-    edm::InputTag caloHTInputTag;
-    edm::InputTag hemInputTag;
-    edm::InputTag genJetsInputTag;
-    edm::InputTag caloJetsInputTag;
-    edm::InputTag genMETInputTag;
+    edm::EDGetTokenT<edm::View<reco::PFJet> > pfJetsToken;
+    edm::EDGetTokenT<edm::View<reco::MET> > pfMetToken;
+    edm::EDGetTokenT<edm::View<reco::MET> > pfHTToken;
+    edm::EDGetTokenT<edm::View<reco::MET> > caloMetToken;
+    edm::EDGetTokenT<edm::View<reco::MET> > caloHTToken;
+    edm::EDGetTokenT<edm::View<reco::GenJet> > genJetsToken;
+    edm::EDGetTokenT<edm::View<reco::CaloJet> > caloJetsToken;
+    edm::EDGetTokenT<edm::View<reco::GenMET> > genMETToken;
     
 };
 
