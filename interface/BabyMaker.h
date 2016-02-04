@@ -31,7 +31,9 @@ private:
     // ----------member data ---------------------------
     edm::EDGetTokenT<edm::View<reco::PFJet> > pfJetsToken;
     edm::EDGetTokenT<edm::View<reco::MET> > pfMetToken;
+    edm::EDGetTokenT<edm::View<reco::MET> > pfMetNoMuToken;
     edm::EDGetTokenT<edm::View<reco::MET> > pfHTToken;
+    edm::EDGetTokenT<edm::View<reco::MET> > pfHTNoMuTightIDToken;
     edm::EDGetTokenT<edm::View<reco::MET> > pfHTTightIDToken;
     edm::EDGetTokenT<edm::View<reco::MET> > caloMetToken;
     edm::EDGetTokenT<edm::View<reco::MET> > caloHTToken;
