@@ -4,11 +4,13 @@ babyMaker = cms.EDProducer("BabyMaker",
                             pfJetsInputTag_   = cms.InputTag("hltAK4PFJetsCorrected"),
                             pfMetInputTag_    = cms.InputTag("hltPFMETProducer"),
                             pfHTInputTag_     = cms.InputTag("hltPFHT"),
+                            pfHTTightIDInputTag_  = cms.InputTag("hltPFMHTTightID"),
                             caloMetInputTag_  = cms.InputTag("hltMet"),
                             caloHTInputTag_   = cms.InputTag("hltHtMht"),
                             genJetsInputTag_  = cms.InputTag("ak4GenJetsNoNu"),
                             caloJetsInputTag_ = cms.InputTag("hltAK4CaloJetsCorrected"),
                             genMETInputTag_   = cms.InputTag("genMetTrue"),
+                            PileupSummaryInputTag_   = cms.InputTag("addPileupInfo"),
 )
 
 
