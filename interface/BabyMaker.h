@@ -3,6 +3,7 @@
 
 // system include files
 #include <memory>
+#include <string>
 
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -41,7 +42,6 @@ private:
     edm::EDGetTokenT<edm::View<reco::CaloJet> > caloJetsToken;
     edm::EDGetTokenT<edm::View<reco::GenMET> > genMETToken;
     edm::EDGetTokenT<edm::View<PileupSummaryInfo> > pileupSummaryToken;
-    
 };
 
 

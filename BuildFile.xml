@@ -5,6 +5,7 @@
 <use   name="CalibCalorimetry/EcalTPGTools"/>
 <use   name="CondFormats/JetMETObjects"/>
 <use   name="CondFormats/EcalObjects"/>
+<use   name="DataFormats/Math"/>
 <use   name="DataFormats/TauReco"/>
 <use   name="DataFormats/MuonReco"/>
 <use   name="DataFormats/JetReco"/>
@@ -17,7 +18,6 @@
 <use   name="DataFormats/L1Trigger"/>
 <use   name="DataFormats/L1GlobalTrigger"/>
 <use   name="DataFormats/Common"/>
-<use   name="DataFormats/Math"/>
 <use   name="DataFormats/PatCandidates"/>
 <use   name="DataFormats/METReco"/>
 <use   name="Geometry/Records"/>

@@ -3,21 +3,14 @@
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "DataFormats/JetReco/interface/PFJet.h"
-#include "DataFormats/JetReco/interface/GenJet.h"
-#include "DataFormats/JetReco/interface/CaloJet.h"
-#include "DataFormats/PatCandidates/interface/MET.h"
-#include "DataFormats/METReco/interface/GenMET.h"
-#include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
+
+#include "TMath.h"
 
 #include "HLTStudy/HLTBabyMaker/interface/BabyMaker.h"
-#include "HLTStudy/HLTBabyMaker/interface/tools.h"
-#include "HLTStudy/HLTBabyMaker/interface/MT2.h"
-#include "HLTStudy/HLTBabyMaker/interface/hemJet.h"
 
-typedef math::XYZTLorentzVector LorentzVector_;
+typedef math::XYZTLorentzVector LorentzVector;
 
-
+//____________________________________________________________________________
 BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
 
     //-------------- produces statements  -----------------
@@ -82,19 +75,18 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     caloJetsToken = consumes<edm::View<reco::CaloJet> >(iConfig.getParameter<edm::InputTag>("caloJetsInputTag_"));
     genMETToken = consumes<edm::View<reco::GenMET> >(iConfig.getParameter<edm::InputTag>("genMETInputTag_"));
     pileupSummaryToken = consumes<edm::View<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("PileupSummaryInputTag_"));
-
 }
 
-
+//____________________________________________________________________________
 BabyMaker::~BabyMaker() {}
 
-void  BabyMaker::beginJob() {
-}
+//____________________________________________________________________________
+void BabyMaker::beginJob() {}
 
-void BabyMaker::endJob() {
-}
+//____________________________________________________________________________
+void BabyMaker::endJob() {}
 
-
+//____________________________________________________________________________
 // ------------ method called to produce the data  ------------
 void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   
@@ -318,7 +310,9 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       iEvent.put(TrueNumInteractions, "TrueNumInteractions");
       iEvent.put(num_PU_vertices, "numPUvertices");
     }
+
 }
 
+ 
 //define this as a plug-in
 DEFINE_FWK_MODULE(BabyMaker);
