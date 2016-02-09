@@ -13,8 +13,6 @@ babyMaker = cms.EDProducer("BabyMaker",
                             caloJetsInputTag_ = cms.InputTag("hltAK4CaloJetsCorrected"),
                             genMETInputTag_   = cms.InputTag("genMetTrue"),
                             PileupSummaryInputTag_   = cms.InputTag("addPileupInfo"),
-                            TriggerResultsInputTag_   = cms.InputTag("TriggerResults","","reHLT"),
-                            processName_   = cms.string("reHLT"),
 )
 
 
