@@ -25,6 +25,25 @@ for pset in process.GlobalTag.toGet.value():
 
 process.load('HLTStudy.HLTBabyMaker.trigBoolMaker_cfi')
 
+# Get command line options
+from FWCore.ParameterSet.VarParsing import VarParsing
+options = VarParsing ('analysis')
+
+options.register(
+    'input',
+    'ntuple.root',
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.string,
+    'local file to run on')
+
+options.register(
+    'output',
+    'ntuple_trigbools.root',
+    VarParsing.multiplicity.singleton,
+    VarParsing.varType.string,
+    'output file name')
+
+options.parseArguments()
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(-1)
@@ -33,12 +52,12 @@ process.maxEvents = cms.untracked.PSet(
 
 # Input source
 process.source = cms.Source("PoolSource",
-   fileNames = cms.untracked.vstring('file:ntuple_hlt_mc_v5.root'),
+   fileNames = cms.untracked.vstring('file:' + options.input),
 )
 
 
 process.out = cms.OutputModule("PoolOutputModule",
-  fileName     = cms.untracked.string('ntuple_trigbools.root'),
+  fileName     = cms.untracked.string(options.output),
   dropMetaData = cms.untracked.string("NONE")
 )
 
