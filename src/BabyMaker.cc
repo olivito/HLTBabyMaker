@@ -61,6 +61,14 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     produces<std::vector<float> > ("TrueNumInteractions").setBranchAlias("TrueNumInteractions");
     produces<std::vector<int> >   ("numPUvertices").setBranchAlias("num_PU_vertices");
 
+    produces<std::vector<float> > ("pfjetsofflinept").setBranchAlias("pfjets_offline_pt");
+    produces<std::vector<float> > ("pfjetsofflineeta").setBranchAlias("pfjets_offline_eta");
+    produces<std::vector<float> > ("pfjetsofflinephi").setBranchAlias("pfjets_offline_phi");
+
+    produces<float> ("pfofflineht").setBranchAlias("pf_offline_ht");
+    produces<float> ("pfmetofflinept").setBranchAlias("pfmet_offline_pt");
+    produces<float> ("pfmetofflinephi").setBranchAlias("pfmet_offline_phi");
+
     //-------------- consumes statements  -----------------
 
     pfJetsToken = consumes<edm::View<reco::PFJet> >(iConfig.getParameter<edm::InputTag>("pfJetsInputTag_"));
@@ -75,6 +83,9 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     caloJetsToken = consumes<edm::View<reco::CaloJet> >(iConfig.getParameter<edm::InputTag>("caloJetsInputTag_"));
     genMETToken = consumes<edm::View<reco::GenMET> >(iConfig.getParameter<edm::InputTag>("genMETInputTag_"));
     pileupSummaryToken = consumes<edm::View<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("PileupSummaryInputTag_"));
+    
+    pfJetsOfflineToken = consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("pfJetsOfflineInputTag_"));
+    pfMetOfflineToken = consumes<edm::View<pat::MET> >(iConfig.getParameter<edm::InputTag>("pfMetOfflineInputTag_"));
 }
 
 //____________________________________________________________________________
@@ -138,6 +149,14 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     std::auto_ptr<std::vector<float> > TrueNumInteractions (new std::vector<float>);
     std::auto_ptr<std::vector<int> > num_PU_vertices       (new std::vector<int>);
     
+    std::auto_ptr<std::vector<float> > pfjets_offline_pt   (new std::vector<float>);
+    std::auto_ptr<std::vector<float> > pfjets_offline_eta  (new std::vector<float>);
+    std::auto_ptr<std::vector<float> > pfjets_offline_phi  (new std::vector<float>);
+
+    std::auto_ptr<float> pf_offline_ht   (new float);
+    std::auto_ptr<float> pfmet_offline_pt   (new float);
+    std::auto_ptr<float> pfmet_offline_phi  (new float);
+
     //-------------- getByToken  -----------------
 
     edm::Handle<edm::View<reco::PFJet> > jet_h;
@@ -175,6 +194,12 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     edm::Handle<edm::View<PileupSummaryInfo> > pusummary_h;
     iEvent.getByToken(pileupSummaryToken, pusummary_h);
+
+    edm::Handle<edm::View<pat::Jet> > jet_offline_h;
+    iEvent.getByToken(pfJetsOfflineToken, jet_offline_h);
+
+    edm::Handle<edm::View<pat::MET> > pfmet_offline_h;
+    iEvent.getByToken(pfMetOfflineToken, pfmet_offline_h);
 
     //-------------- retrieving objects  -----------------
 
@@ -219,7 +244,7 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       calojets_eta ->push_back(calojet_it->eta());
       calojets_phi ->push_back(calojet_it->phi());
 
-    } 
+    }
 
     *pfmet_pt   = (pfmet_h->front()).pt();
     *pfmet_phi  = (pfmet_h->front()).phi();
@@ -255,6 +280,26 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	TrueNumInteractions->push_back(pusummary_it->getTrueNumInteractions());
 	num_PU_vertices    ->push_back(pusummary_it->getPU_NumInteractions());
       }
+    }
+
+    *pf_offline_ht = 0.;
+    if (jet_offline_h.isValid()) {
+      for(edm::View<pat::Jet>::const_iterator jet_offline_it = jet_offline_h->begin(); jet_offline_it != jet_offline_h->end(); jet_offline_it++){
+
+	if(jet_offline_it->pt() < 30.0) continue;
+
+	pfjets_offline_pt  ->push_back(jet_offline_it->pt());
+	pfjets_offline_eta ->push_back(jet_offline_it->eta());
+	pfjets_offline_phi ->push_back(jet_offline_it->phi());
+
+	if(fabs(jet_offline_it->eta()) > 3.0) continue;
+	*pf_offline_ht += jet_offline_it->pt();
+      }
+    }
+
+    if (pfmet_offline_h.isValid()) {
+      *pfmet_offline_pt   = (pfmet_offline_h->front()).pt();
+      *pfmet_offline_phi  = (pfmet_offline_h->front()).phi();
     }
 
     //-------------- put statements -----------------
@@ -311,6 +356,18 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       iEvent.put(num_PU_vertices, "numPUvertices");
     }
 
+    if (jet_offline_h.isValid()) {
+      iEvent.put(pfjets_offline_pt,   "pfjetsofflinept" );
+      iEvent.put(pfjets_offline_eta,  "pfjetsofflineeta" );
+      iEvent.put(pfjets_offline_phi,  "pfjetsofflinephi" );
+
+      iEvent.put(pf_offline_ht,   "pfofflineht" );
+    }
+
+    if (pfmet_offline_h.isValid()) {
+      iEvent.put(pfmet_offline_pt,   "pfmetofflinept" );
+      iEvent.put(pfmet_offline_phi,  "pfmetofflinephi" );
+    }
 }
 
  

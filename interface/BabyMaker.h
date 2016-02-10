@@ -19,6 +19,11 @@
 #include "DataFormats/METReco/interface/GenMET.h"
 #include "SimDataFormats/PileupSummaryInfo/interface/PileupSummaryInfo.h"
 
+#include "DataFormats/METReco/interface/PFMET.h"
+#include "DataFormats/PatCandidates/interface/MET.h"
+#include "DataFormats/PatCandidates/interface/Jet.h"
+
+
 class BabyMaker : public edm::EDProducer {
 public:
     explicit BabyMaker (const edm::ParameterSet&);
@@ -42,6 +47,9 @@ private:
     edm::EDGetTokenT<edm::View<reco::CaloJet> > caloJetsToken;
     edm::EDGetTokenT<edm::View<reco::GenMET> > genMETToken;
     edm::EDGetTokenT<edm::View<PileupSummaryInfo> > pileupSummaryToken;
+  
+    edm::EDGetTokenT<edm::View<pat::Jet> > pfJetsOfflineToken;
+    edm::EDGetTokenT<edm::View<pat::MET> > pfMetOfflineToken;
 };
 
 
