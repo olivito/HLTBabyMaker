@@ -56,6 +56,8 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     produces<float> ("calomhtpt").setBranchAlias("calo_mht_pt");
     produces<float> ("calomhtphi").setBranchAlias("calo_mht_phi");
 
+    produces<int> ("npixvtx").setBranchAlias("n_pix_vtx");
+
     produces<float> ("scale1fb").setBranchAlias("scale1fb");
 
     produces<std::vector<float> > ("TrueNumInteractions").setBranchAlias("TrueNumInteractions");
@@ -83,6 +85,7 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     caloJetsToken = consumes<edm::View<reco::CaloJet> >(iConfig.getParameter<edm::InputTag>("caloJetsInputTag_"));
     genMETToken = consumes<edm::View<reco::GenMET> >(iConfig.getParameter<edm::InputTag>("genMETInputTag_"));
     pileupSummaryToken = consumes<edm::View<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("PileupSummaryInputTag_"));
+    pixelVerticesToken = consumes<edm::View<reco::Vertex> >(iConfig.getParameter<edm::InputTag>("pixelVerticesInputTag_"));
     
     pfJetsOfflineToken = consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("pfJetsOfflineInputTag_"));
     pfMetOfflineToken = consumes<edm::View<pat::MET> >(iConfig.getParameter<edm::InputTag>("pfMetOfflineInputTag_"));
@@ -144,6 +147,8 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     std::auto_ptr<float> calo_mht_pt   (new float);
     std::auto_ptr<float> calo_mht_phi   (new float);
 
+    std::auto_ptr<int> n_pix_vtx     (new int);
+
     std::auto_ptr<float> scale1fb     (new float);
 
     std::auto_ptr<std::vector<float> > TrueNumInteractions (new std::vector<float>);
@@ -194,6 +199,9 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     edm::Handle<edm::View<PileupSummaryInfo> > pusummary_h;
     iEvent.getByToken(pileupSummaryToken, pusummary_h);
+
+    edm::Handle<edm::View<reco::Vertex> > pixelvertices_h;
+    iEvent.getByToken(pixelVerticesToken, pixelvertices_h);
 
     edm::Handle<edm::View<pat::Jet> > jet_offline_h;
     iEvent.getByToken(pfJetsOfflineToken, jet_offline_h);
@@ -275,6 +283,8 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     *calo_mht_pt    = (caloht_h->front()).pt();
     *calo_mht_phi   = (caloht_h->front()).phi();
 
+    *n_pix_vtx = pixelvertices_h->size();
+    
     if (pusummary_h.isValid()) {
       for(edm::View<PileupSummaryInfo>::const_iterator pusummary_it = pusummary_h->begin(); pusummary_it != pusummary_h->end(); pusummary_it++){
 	TrueNumInteractions->push_back(pusummary_it->getTrueNumInteractions());
@@ -349,6 +359,8 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     iEvent.put(calo_mht_pt,   "calomhtpt" );
     iEvent.put(calo_mht_phi,  "calomhtphi" );
 
+    iEvent.put(n_pix_vtx,  "npixvtx" );
+    
     iEvent.put(scale1fb,  "scale1fb" );
 
     if (pusummary_h.isValid()) {
