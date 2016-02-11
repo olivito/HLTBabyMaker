@@ -14,6 +14,7 @@ babyMaker = cms.EDProducer("BabyMaker",
                             genMETInputTag_   = cms.InputTag("genMetTrue"),
                             PileupSummaryInputTag_   = cms.InputTag("addPileupInfo"),
                             pixelVerticesInputTag_   = cms.InputTag("hltPixelVertices"),
+                            genEvtInfoInputTag_   = cms.InputTag("generator"),
                             pfJetsOfflineInputTag_   = cms.InputTag("slimmedJets","","PAT"),
                             pfMetOfflineInputTag_    = cms.InputTag("slimmedMETs","","PAT"),
 )

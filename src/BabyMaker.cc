@@ -60,6 +60,8 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
 
     produces<float> ("scale1fb").setBranchAlias("scale1fb");
 
+    produces<float> ("mcweight").setBranchAlias("mc_weight");
+
     produces<std::vector<float> > ("TrueNumInteractions").setBranchAlias("TrueNumInteractions");
     produces<std::vector<int> >   ("numPUvertices").setBranchAlias("num_PU_vertices");
 
@@ -86,6 +88,7 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     genMETToken = consumes<edm::View<reco::GenMET> >(iConfig.getParameter<edm::InputTag>("genMETInputTag_"));
     pileupSummaryToken = consumes<edm::View<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("PileupSummaryInputTag_"));
     pixelVerticesToken = consumes<edm::View<reco::Vertex> >(iConfig.getParameter<edm::InputTag>("pixelVerticesInputTag_"));
+    genEvtInfoToken = consumes<GenEventInfoProduct>(iConfig.getParameter<edm::InputTag>("genEvtInfoInputTag_"));
     
     pfJetsOfflineToken = consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("pfJetsOfflineInputTag_"));
     pfMetOfflineToken = consumes<edm::View<pat::MET> >(iConfig.getParameter<edm::InputTag>("pfMetOfflineInputTag_"));
@@ -151,6 +154,8 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     std::auto_ptr<float> scale1fb     (new float);
 
+    std::auto_ptr<float> mc_weight     (new float);
+
     std::auto_ptr<std::vector<float> > TrueNumInteractions (new std::vector<float>);
     std::auto_ptr<std::vector<int> > num_PU_vertices       (new std::vector<int>);
     
@@ -203,6 +208,9 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     edm::Handle<edm::View<reco::Vertex> > pixelvertices_h;
     iEvent.getByToken(pixelVerticesToken, pixelvertices_h);
 
+    edm::Handle<GenEventInfoProduct> genEvtInfo_h;
+    iEvent.getByToken(genEvtInfoToken, genEvtInfo_h);
+    
     edm::Handle<edm::View<pat::Jet> > jet_offline_h;
     iEvent.getByToken(pfJetsOfflineToken, jet_offline_h);
 
@@ -312,6 +320,8 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       *pfmet_offline_phi  = (pfmet_offline_h->front()).phi();
     }
 
+    if (genEvtInfo_h.isValid()) *mc_weight = genEvtInfo_h->weight();
+
     //-------------- put statements -----------------
 
     iEvent.put(pfjets_pt,   "pfjetspt" );
@@ -362,6 +372,8 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     iEvent.put(n_pix_vtx,  "npixvtx" );
     
     iEvent.put(scale1fb,  "scale1fb" );
+
+    if (genEvtInfo_h.isValid()) iEvent.put(mc_weight,  "mcweight" );
 
     if (pusummary_h.isValid()) {
       iEvent.put(TrueNumInteractions, "TrueNumInteractions");
