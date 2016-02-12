@@ -36,6 +36,9 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     produces<float> ("calometpt").setBranchAlias("calomet_pt");
     produces<float> ("calometphi").setBranchAlias("calomet_phi");
 
+    produces<float> ("calomethbhecleanedpt").setBranchAlias("calomet_hbhecleaned_pt");
+    produces<float> ("calomethbhecleanedphi").setBranchAlias("calomet_hbhecleaned_phi");
+
     produces<float> ("genmetpt").setBranchAlias("genmet_pt");
     produces<float> ("genmetphi").setBranchAlias("genmet_phi");
 
@@ -82,6 +85,7 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     pfHTNoMuTightIDToken = consumes<edm::View<reco::MET> >(iConfig.getParameter<edm::InputTag>("pfHTNoMuTightIDInputTag_"));
     pfHTTightIDToken = consumes<edm::View<reco::MET> >(iConfig.getParameter<edm::InputTag>("pfHTTightIDInputTag_"));
     caloMetToken = consumes<edm::View<reco::MET> >(iConfig.getParameter<edm::InputTag>("caloMetInputTag_"));
+    caloMetHBHECleanedToken = consumes<edm::View<reco::MET> >(iConfig.getParameter<edm::InputTag>("caloMetHBHECleanedInputTag_"));
     caloHTToken = consumes<edm::View<reco::MET> >(iConfig.getParameter<edm::InputTag>("caloHTInputTag_"));
     genJetsToken = consumes<edm::View<reco::GenJet> >(iConfig.getParameter<edm::InputTag>("genJetsInputTag_"));
     caloJetsToken = consumes<edm::View<reco::CaloJet> >(iConfig.getParameter<edm::InputTag>("caloJetsInputTag_"));
@@ -129,6 +133,9 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     std::auto_ptr<float> calomet_pt   (new float);
     std::auto_ptr<float> calomet_phi  (new float);
+
+    std::auto_ptr<float> calomet_hbhecleaned_pt   (new float);
+    std::auto_ptr<float> calomet_hbhecleaned_phi  (new float);
 
     std::auto_ptr<float> genmet_pt   (new float);
     std::auto_ptr<float> genmet_phi  (new float);
@@ -192,6 +199,9 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     edm::Handle<edm::View<reco::MET> > calomet_h;
     iEvent.getByToken(caloMetToken, calomet_h);
+
+    edm::Handle<edm::View<reco::MET> > calomet_hbhecleaned_h;
+    iEvent.getByToken(caloMetHBHECleanedToken, calomet_hbhecleaned_h);
 
     edm::Handle<edm::View<reco::GenMET> > genmet_h;
     iEvent.getByToken(genMETToken, genmet_h);
@@ -271,6 +281,9 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     *calomet_pt   = (calomet_h->front()).pt();
     *calomet_phi  = (calomet_h->front()).phi();
 
+    *calomet_hbhecleaned_pt   = (calomet_hbhecleaned_h->front()).pt();
+    *calomet_hbhecleaned_phi  = (calomet_hbhecleaned_h->front()).phi();
+
     if (genmet_h.isValid()) {
       *genmet_pt   = (genmet_h->front()).pt();
       *genmet_phi  = (genmet_h->front()).phi();
@@ -346,6 +359,9 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     iEvent.put(calomet_pt,   "calometpt" );
     iEvent.put(calomet_phi,  "calometphi" );
+
+    iEvent.put(calomet_hbhecleaned_pt,   "calomethbhecleanedpt" );
+    iEvent.put(calomet_hbhecleaned_phi,  "calomethbhecleanedphi" );
 
     if (genmet_h.isValid()) {
       iEvent.put(genmet_pt,   "genmetpt" );

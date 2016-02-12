@@ -44,6 +44,7 @@ private:
     edm::EDGetTokenT<edm::View<reco::MET> > pfHTNoMuTightIDToken;
     edm::EDGetTokenT<edm::View<reco::MET> > pfHTTightIDToken;
     edm::EDGetTokenT<edm::View<reco::MET> > caloMetToken;
+    edm::EDGetTokenT<edm::View<reco::MET> > caloMetHBHECleanedToken;
     edm::EDGetTokenT<edm::View<reco::MET> > caloHTToken;
     edm::EDGetTokenT<edm::View<reco::GenJet> > genJetsToken;
     edm::EDGetTokenT<edm::View<reco::CaloJet> > caloJetsToken;
