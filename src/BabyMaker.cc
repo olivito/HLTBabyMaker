@@ -42,10 +42,14 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     produces<float> ("genmetpt").setBranchAlias("genmet_pt");
     produces<float> ("genmetphi").setBranchAlias("genmet_phi");
 
-    produces<float> ("genht").setBranchAlias("gen_ht");
+    produces<float> ("genht30").setBranchAlias("gen_ht30");
+    produces<float> ("genht40").setBranchAlias("gen_ht40");
     
-    produces<float> ("pfht").setBranchAlias("pf_ht");
-    produces<float> ("caloht").setBranchAlias("calo_ht");
+    produces<float> ("pfht30").setBranchAlias("pf_ht30");
+    produces<float> ("pfht40").setBranchAlias("pf_ht40");
+    
+    produces<float> ("caloht30").setBranchAlias("calo_ht30");
+    produces<float> ("caloht40").setBranchAlias("calo_ht40");
 
     produces<float> ("pfmhtpt").setBranchAlias("pf_mht_pt");
     produces<float> ("pfmhtphi").setBranchAlias("pf_mht_phi");
@@ -72,7 +76,8 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     produces<std::vector<float> > ("pfjetsofflineeta").setBranchAlias("pfjets_offline_eta");
     produces<std::vector<float> > ("pfjetsofflinephi").setBranchAlias("pfjets_offline_phi");
 
-    produces<float> ("pfofflineht").setBranchAlias("pf_offline_ht");
+    produces<float> ("pfofflineht30").setBranchAlias("pf_offline_ht30");
+    produces<float> ("pfofflineht40").setBranchAlias("pf_offline_ht40");
     produces<float> ("pfmetofflinept").setBranchAlias("pfmet_offline_pt");
     produces<float> ("pfmetofflinephi").setBranchAlias("pfmet_offline_phi");
 
@@ -140,10 +145,14 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     std::auto_ptr<float> genmet_pt   (new float);
     std::auto_ptr<float> genmet_phi  (new float);
 
-    std::auto_ptr<float> gen_ht   (new float);
+    std::auto_ptr<float> gen_ht30   (new float);
+    std::auto_ptr<float> gen_ht40   (new float);
     
-    std::auto_ptr<float> pf_ht   (new float);
-    std::auto_ptr<float> calo_ht   (new float);
+    std::auto_ptr<float> pf_ht30   (new float);
+    std::auto_ptr<float> pf_ht40   (new float);
+    
+    std::auto_ptr<float> calo_ht30   (new float);
+    std::auto_ptr<float> calo_ht40   (new float);
 
     std::auto_ptr<float> pf_mht_pt   (new float);
     std::auto_ptr<float> pf_mht_phi   (new float);
@@ -170,7 +179,8 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     std::auto_ptr<std::vector<float> > pfjets_offline_eta  (new std::vector<float>);
     std::auto_ptr<std::vector<float> > pfjets_offline_phi  (new std::vector<float>);
 
-    std::auto_ptr<float> pf_offline_ht   (new float);
+    std::auto_ptr<float> pf_offline_ht30   (new float);
+    std::auto_ptr<float> pf_offline_ht40   (new float);
     std::auto_ptr<float> pfmet_offline_pt   (new float);
     std::auto_ptr<float> pfmet_offline_phi  (new float);
 
@@ -230,45 +240,55 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     //-------------- retrieving objects  -----------------
 
     *scale1fb = 1.0;
-    
-    std::vector<LorentzVector> goodJets;
 
+    *pf_ht30 = 0.;
+    *pf_ht40 = 0.;
     for(edm::View<reco::PFJet>::const_iterator jet_it = jet_h->begin(); jet_it != jet_h->end(); jet_it++){
 
-      if(jet_it->pt() < 40.0) continue;
+      if(jet_it->pt() < 30.0) continue;
 
       pfjets_pt  ->push_back(jet_it->pt());
       pfjets_eta ->push_back(jet_it->eta());
       pfjets_phi ->push_back(jet_it->phi());
 
-      if(jet_it->pt() < 40.0) continue;
       if(fabs(jet_it->eta()) > 3.0) continue;
-      if(goodJets.size() == 7) continue;
-      goodJets.push_back(LorentzVector(jet_it->p4()));
+      *pf_ht30 += jet_it->pt();
+      if(jet_it->pt() > 40.0) *pf_ht40 += jet_it->pt();
+
   
     } 
 
-    *gen_ht = 0;
+    *gen_ht30 = 0;
+    *gen_ht40 = 0;
     if (genjet_h.isValid()) {
       for(edm::View<reco::GenJet>::const_iterator genjet_it = genjet_h->begin(); genjet_it != genjet_h->end(); genjet_it++){
 
-	if(genjet_it->pt() < 40.0) continue;
+	if(genjet_it->pt() < 30.0) continue;
 
 	genjets_pt  ->push_back(genjet_it->pt());
 	genjets_eta ->push_back(genjet_it->eta());
 	genjets_phi ->push_back(genjet_it->phi());
 
-	if (fabs(genjet_it->eta()) < 3.0) *gen_ht += genjet_it->pt();
+	if (fabs(genjet_it->eta()) > 3.0) continue;
+	*gen_ht30 += genjet_it->pt();
+	if(genjet_it->pt() > 40.0) *gen_ht40 += genjet_it->pt();
       }
     }
 
+    *calo_ht30 = 0.;
+    *calo_ht40 = 0.;
     for(edm::View<reco::CaloJet>::const_iterator calojet_it = calojet_h->begin(); calojet_it != calojet_h->end(); calojet_it++){
 
-      if(calojet_it->pt() < 40.0) continue;
+      // store et instead of pt -> used in the trigger..
+      if(calojet_it->et() < 30.0) continue;
 
-      calojets_pt  ->push_back(calojet_it->pt());
+      calojets_pt  ->push_back(calojet_it->et());
       calojets_eta ->push_back(calojet_it->eta());
       calojets_phi ->push_back(calojet_it->phi());
+
+      if (fabs(calojet_it->eta()) > 3.0) continue;
+      *calo_ht30 += calojet_it->et();
+      if (calojet_it->et() > 40.) *calo_ht40 += calojet_it->et();
 
     }
 
@@ -289,8 +309,8 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       *genmet_phi  = (genmet_h->front()).phi();
     }
 
-    *pf_ht    = (pfht_h->front()).sumEt();
-    *calo_ht  = (caloht_h->front()).sumEt();
+    // *pf_ht    = (pfht_h->front()).sumEt();
+    // *calo_ht  = (caloht_h->front()).sumEt();
 
     *pf_mht_pt    = (pfht_h->front()).pt();
     *pf_mht_phi   = (pfht_h->front()).phi();
@@ -313,7 +333,8 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       }
     }
 
-    *pf_offline_ht = 0.;
+    *pf_offline_ht30 = 0.;
+    *pf_offline_ht40 = 0.;
     if (jet_offline_h.isValid()) {
       for(edm::View<pat::Jet>::const_iterator jet_offline_it = jet_offline_h->begin(); jet_offline_it != jet_offline_h->end(); jet_offline_it++){
 
@@ -324,7 +345,8 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	pfjets_offline_phi ->push_back(jet_offline_it->phi());
 
 	if(fabs(jet_offline_it->eta()) > 3.0) continue;
-	*pf_offline_ht += jet_offline_it->pt();
+	*pf_offline_ht30 += jet_offline_it->pt();
+	if(jet_offline_it->pt() > 40.0)	*pf_offline_ht40 += jet_offline_it->pt();
       }
     }
 
@@ -368,10 +390,16 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       iEvent.put(genmet_phi,  "genmetphi" );
     }
 
-    if (genjet_h.isValid()) iEvent.put(gen_ht, "genht");
+    if (genjet_h.isValid()) {
+      iEvent.put(gen_ht30, "genht30");
+      iEvent.put(gen_ht40, "genht40");
+    }
 
-    iEvent.put(pf_ht,   "pfht" );
-    iEvent.put(calo_ht,   "caloht" );
+    iEvent.put(pf_ht30,   "pfht30" );
+    iEvent.put(pf_ht40,   "pfht40" );
+    
+    iEvent.put(calo_ht30,   "caloht30" );
+    iEvent.put(calo_ht40,   "caloht40" );
 
     iEvent.put(pf_mht_pt,   "pfmhtpt" );
     iEvent.put(pf_mht_phi,  "pfmhtphi" );
@@ -401,7 +429,8 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       iEvent.put(pfjets_offline_eta,  "pfjetsofflineeta" );
       iEvent.put(pfjets_offline_phi,  "pfjetsofflinephi" );
 
-      iEvent.put(pf_offline_ht,   "pfofflineht" );
+      iEvent.put(pf_offline_ht30,   "pfofflineht30" );
+      iEvent.put(pf_offline_ht40,   "pfofflineht40" );
     }
 
     if (pfmet_offline_h.isValid()) {
