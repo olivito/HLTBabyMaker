@@ -68,6 +68,8 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     produces<float> ("scale1fb").setBranchAlias("scale1fb");
 
     produces<float> ("mcweight").setBranchAlias("mc_weight");
+    produces<float> ("pthat").setBranchAlias("pt_hat");
+    produces<float> ("pthatpumax").setBranchAlias("pt_hat_pumax");
 
     produces<std::vector<float> > ("TrueNumInteractions").setBranchAlias("TrueNumInteractions");
     produces<std::vector<int> >   ("numPUvertices").setBranchAlias("num_PU_vertices");
@@ -171,6 +173,8 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     std::auto_ptr<float> scale1fb     (new float);
 
     std::auto_ptr<float> mc_weight     (new float);
+    std::auto_ptr<float> pt_hat     (new float);
+    std::auto_ptr<float> pt_hat_pumax     (new float);
 
     std::auto_ptr<std::vector<float> > TrueNumInteractions (new std::vector<float>);
     std::auto_ptr<std::vector<int> > num_PU_vertices       (new std::vector<int>);
@@ -326,11 +330,19 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     *n_pix_vtx = pixelvertices_h->size();
     
+    *pt_hat_pumax = 0.;
     if (pusummary_h.isValid()) {
       for(edm::View<PileupSummaryInfo>::const_iterator pusummary_it = pusummary_h->begin(); pusummary_it != pusummary_h->end(); pusummary_it++){
 	TrueNumInteractions->push_back(pusummary_it->getTrueNumInteractions());
 	num_PU_vertices    ->push_back(pusummary_it->getPU_NumInteractions());
+	// get largest ptHat for a PU event
+	//  based on https://github.com/cms-steam/RemovePileUpDominatedEvents
+	//  but not as sophisticated: not using genJets from PU collisions..
+	for(const auto& ptHat : pusummary_it->getPU_pT_hats()) {
+	  if (ptHat > *pt_hat_pumax) *pt_hat_pumax = ptHat;
+	}
       }
+
     }
 
     *pf_offline_ht30 = 0.;
@@ -355,7 +367,10 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
       *pfmet_offline_phi  = (pfmet_offline_h->front()).phi();
     }
 
-    if (genEvtInfo_h.isValid()) *mc_weight = genEvtInfo_h->weight();
+    if (genEvtInfo_h.isValid()) {
+      *mc_weight = genEvtInfo_h->weight();
+      *pt_hat = genEvtInfo_h->qScale();
+    }
 
     //-------------- put statements -----------------
 
@@ -417,11 +432,15 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     
     iEvent.put(scale1fb,  "scale1fb" );
 
-    if (genEvtInfo_h.isValid()) iEvent.put(mc_weight,  "mcweight" );
+    if (genEvtInfo_h.isValid()) {
+      iEvent.put(mc_weight,  "mcweight" );
+      iEvent.put(pt_hat,  "pthat" );
+    }
 
     if (pusummary_h.isValid()) {
       iEvent.put(TrueNumInteractions, "TrueNumInteractions");
       iEvent.put(num_PU_vertices, "numPUvertices");
+      iEvent.put(pt_hat_pumax, "pthatpumax");
     }
 
     if (jet_offline_h.isValid()) {
