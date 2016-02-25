@@ -15,6 +15,8 @@
 TrigBoolMaker::TrigBoolMaker(const edm::ParameterSet& iConfig) {
 
     //-------------- produces statements  -----------------
+    produces<int> ("HLTL1HTT75").setBranchAlias("HLT_L1HTT75");
+    produces<int> ("HLTL1HTT100").setBranchAlias("HLT_L1HTT100");
     produces<int> ("HLTL1HTT125").setBranchAlias("HLT_L1HTT125");
     produces<int> ("HLTL1HTT150").setBranchAlias("HLT_L1HTT150");
     produces<int> ("HLTL1HTT175").setBranchAlias("HLT_L1HTT175");
@@ -61,6 +63,8 @@ void TrigBoolMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   
     //-------------- branch auto_ptr defs  -----------------
   
+    std::auto_ptr<int> HLT_L1HTT75      (new int);
+    std::auto_ptr<int> HLT_L1HTT100     (new int);
     std::auto_ptr<int> HLT_L1HTT125     (new int);
     std::auto_ptr<int> HLT_L1HTT150     (new int);
     std::auto_ptr<int> HLT_L1HTT175     (new int);
@@ -81,6 +85,8 @@ void TrigBoolMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     //-------------- retrieving decisions  -----------------
     
+    *HLT_L1HTT75 = analyzeTrigger(iEvent,iSetup,"HLT_L1HTT75");
+    *HLT_L1HTT100 = analyzeTrigger(iEvent,iSetup,"HLT_L1HTT100");
     *HLT_L1HTT125 = analyzeTrigger(iEvent,iSetup,"HLT_L1HTT125");
     *HLT_L1HTT150 = analyzeTrigger(iEvent,iSetup,"HLT_L1HTT150");
     *HLT_L1HTT175 = analyzeTrigger(iEvent,iSetup,"HLT_L1HTT175");
@@ -97,6 +103,8 @@ void TrigBoolMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     //-------------- put statements -----------------
 
+    iEvent.put(HLT_L1HTT75,   "HLTL1HTT75" );
+    iEvent.put(HLT_L1HTT100,   "HLTL1HTT100" );
     iEvent.put(HLT_L1HTT125,   "HLTL1HTT125" );
     iEvent.put(HLT_L1HTT150,   "HLTL1HTT150" );
     iEvent.put(HLT_L1HTT175,   "HLTL1HTT175" );
