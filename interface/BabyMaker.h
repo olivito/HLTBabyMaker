@@ -38,9 +38,12 @@ private:
     edm::EDGetTokenT<edm::View<reco::PFJet> > pfJetsToken;
     edm::EDGetTokenT<edm::View<reco::MET> > pfMetToken;
     edm::EDGetTokenT<edm::View<reco::MET> > pfMetNoMuToken;
+    edm::EDGetTokenT<edm::View<reco::MET> > pfMetNoHFToken;
     edm::EDGetTokenT<edm::View<reco::MET> > pfHTToken;
     edm::EDGetTokenT<edm::View<reco::MET> > pfHTNoMuTightIDToken;
     edm::EDGetTokenT<edm::View<reco::MET> > pfHTTightIDToken;
+    edm::EDGetTokenT<edm::View<reco::MET> > pfHTTightIDCentralToken;
+    edm::EDGetTokenT<edm::View<reco::MET> > pfHTNoHFTightIDCentralToken;
     edm::EDGetTokenT<edm::View<reco::MET> > caloMetToken;
     edm::EDGetTokenT<edm::View<reco::MET> > caloMetHBHECleanedToken;
     edm::EDGetTokenT<edm::View<reco::MET> > caloHTToken;
