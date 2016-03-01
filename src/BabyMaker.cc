@@ -65,15 +65,6 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
 
     produces<int> ("npixvtx").setBranchAlias("n_pix_vtx");
 
-    produces<float> ("scale1fb").setBranchAlias("scale1fb");
-
-    produces<float> ("mcweight").setBranchAlias("mc_weight");
-    produces<float> ("pthat").setBranchAlias("pt_hat");
-    produces<float> ("pthatpumax").setBranchAlias("pt_hat_pumax");
-
-    produces<std::vector<float> > ("TrueNumInteractions").setBranchAlias("TrueNumInteractions");
-    produces<std::vector<int> >   ("numPUvertices").setBranchAlias("num_PU_vertices");
-
     produces<std::vector<float> > ("pfjetsofflinept").setBranchAlias("pfjets_offline_pt");
     produces<std::vector<float> > ("pfjetsofflineeta").setBranchAlias("pfjets_offline_eta");
     produces<std::vector<float> > ("pfjetsofflinephi").setBranchAlias("pfjets_offline_phi");
@@ -97,9 +88,7 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     genJetsToken = consumes<edm::View<reco::GenJet> >(iConfig.getParameter<edm::InputTag>("genJetsInputTag_"));
     caloJetsToken = consumes<edm::View<reco::CaloJet> >(iConfig.getParameter<edm::InputTag>("caloJetsInputTag_"));
     genMETToken = consumes<edm::View<reco::GenMET> >(iConfig.getParameter<edm::InputTag>("genMETInputTag_"));
-    pileupSummaryToken = consumes<edm::View<PileupSummaryInfo> >(iConfig.getParameter<edm::InputTag>("PileupSummaryInputTag_"));
     pixelVerticesToken = consumes<edm::View<reco::Vertex> >(iConfig.getParameter<edm::InputTag>("pixelVerticesInputTag_"));
-    genEvtInfoToken = consumes<GenEventInfoProduct>(iConfig.getParameter<edm::InputTag>("genEvtInfoInputTag_"));
     
     pfJetsOfflineToken = consumes<edm::View<pat::Jet> >(iConfig.getParameter<edm::InputTag>("pfJetsOfflineInputTag_"));
     pfMetOfflineToken = consumes<edm::View<pat::MET> >(iConfig.getParameter<edm::InputTag>("pfMetOfflineInputTag_"));
@@ -170,15 +159,6 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     std::auto_ptr<int> n_pix_vtx     (new int);
 
-    std::auto_ptr<float> scale1fb     (new float);
-
-    std::auto_ptr<float> mc_weight     (new float);
-    std::auto_ptr<float> pt_hat     (new float);
-    std::auto_ptr<float> pt_hat_pumax     (new float);
-
-    std::auto_ptr<std::vector<float> > TrueNumInteractions (new std::vector<float>);
-    std::auto_ptr<std::vector<int> > num_PU_vertices       (new std::vector<int>);
-    
     std::auto_ptr<std::vector<float> > pfjets_offline_pt   (new std::vector<float>);
     std::auto_ptr<std::vector<float> > pfjets_offline_eta  (new std::vector<float>);
     std::auto_ptr<std::vector<float> > pfjets_offline_phi  (new std::vector<float>);
@@ -226,14 +206,8 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     edm::Handle<edm::View<reco::CaloJet> > calojet_h;
     iEvent.getByToken(caloJetsToken, calojet_h);
 
-    edm::Handle<edm::View<PileupSummaryInfo> > pusummary_h;
-    iEvent.getByToken(pileupSummaryToken, pusummary_h);
-
     edm::Handle<edm::View<reco::Vertex> > pixelvertices_h;
     iEvent.getByToken(pixelVerticesToken, pixelvertices_h);
-
-    edm::Handle<GenEventInfoProduct> genEvtInfo_h;
-    iEvent.getByToken(genEvtInfoToken, genEvtInfo_h);
     
     edm::Handle<edm::View<pat::Jet> > jet_offline_h;
     iEvent.getByToken(pfJetsOfflineToken, jet_offline_h);
@@ -242,8 +216,6 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     iEvent.getByToken(pfMetOfflineToken, pfmet_offline_h);
 
     //-------------- retrieving objects  -----------------
-
-    *scale1fb = 1.0;
 
     *pf_ht30 = 0.;
     *pf_ht40 = 0.;
@@ -329,21 +301,6 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     *calo_mht_phi   = (caloht_h->front()).phi();
 
     *n_pix_vtx = pixelvertices_h->size();
-    
-    *pt_hat_pumax = 0.;
-    if (pusummary_h.isValid()) {
-      for(edm::View<PileupSummaryInfo>::const_iterator pusummary_it = pusummary_h->begin(); pusummary_it != pusummary_h->end(); pusummary_it++){
-	TrueNumInteractions->push_back(pusummary_it->getTrueNumInteractions());
-	num_PU_vertices    ->push_back(pusummary_it->getPU_NumInteractions());
-	// get largest ptHat for a PU event
-	//  based on https://github.com/cms-steam/RemovePileUpDominatedEvents
-	//  but not as sophisticated: not using genJets from PU collisions..
-	for(const auto& ptHat : pusummary_it->getPU_pT_hats()) {
-	  if (ptHat > *pt_hat_pumax) *pt_hat_pumax = ptHat;
-	}
-      }
-
-    }
 
     *pf_offline_ht30 = 0.;
     *pf_offline_ht40 = 0.;
@@ -365,11 +322,6 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     if (pfmet_offline_h.isValid()) {
       *pfmet_offline_pt   = (pfmet_offline_h->front()).pt();
       *pfmet_offline_phi  = (pfmet_offline_h->front()).phi();
-    }
-
-    if (genEvtInfo_h.isValid()) {
-      *mc_weight = genEvtInfo_h->weight();
-      *pt_hat = genEvtInfo_h->qScale();
     }
 
     //-------------- put statements -----------------
@@ -429,19 +381,6 @@ void BabyMaker::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     iEvent.put(calo_mht_phi,  "calomhtphi" );
 
     iEvent.put(n_pix_vtx,  "npixvtx" );
-    
-    iEvent.put(scale1fb,  "scale1fb" );
-
-    if (genEvtInfo_h.isValid()) {
-      iEvent.put(mc_weight,  "mcweight" );
-      iEvent.put(pt_hat,  "pthat" );
-    }
-
-    if (pusummary_h.isValid()) {
-      iEvent.put(TrueNumInteractions, "TrueNumInteractions");
-      iEvent.put(num_PU_vertices, "numPUvertices");
-      iEvent.put(pt_hat_pumax, "pthatpumax");
-    }
 
     if (jet_offline_h.isValid()) {
       iEvent.put(pfjets_offline_pt,   "pfjetsofflinept" );
