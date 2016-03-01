@@ -33,8 +33,8 @@ BabyMaker::BabyMaker(const edm::ParameterSet& iConfig) {
     produces<float> ("pfmetnomupt").setBranchAlias("pfmet_nomu_pt");
     produces<float> ("pfmetnomuphi").setBranchAlias("pfmet_nomu_phi");
 
-    produces<float> ("pfmetnomupt").setBranchAlias("pfmet_nohf_pt");
-    produces<float> ("pfmetnomuphi").setBranchAlias("pfmet_nohf_phi");
+    produces<float> ("pfmetnohfpt").setBranchAlias("pfmet_nohf_pt");
+    produces<float> ("pfmetnohfphi").setBranchAlias("pfmet_nohf_phi");
 
     produces<float> ("calometpt").setBranchAlias("calomet_pt");
     produces<float> ("calometphi").setBranchAlias("calomet_phi");
