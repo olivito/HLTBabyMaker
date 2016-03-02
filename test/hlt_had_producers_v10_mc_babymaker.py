@@ -7436,7 +7436,7 @@ if 'MessageLogger' in process.__dict__:
 # Output
 process.out = cms.OutputModule(
         "PoolOutputModule",
-        fileName     = cms.untracked.string('ntuple_v10_T1bbbb_1000_900_savejets_100.root'),
+        fileName     = cms.untracked.string('ntuple_v10_mc.root'),
         dropMetaData = cms.untracked.string("NONE")
         #SelectEvents = cms.untracked.PSet(
             #SelectEvents = cms.vstring('HLT_L1HTT')
@@ -7449,7 +7449,7 @@ process.out.outputCommands = cms.untracked.vstring( 'drop *' )
 process.out.outputCommands.extend(cms.untracked.vstring('keep *_*babyMaker*_*_*'))
 process.out.outputCommands.extend(cms.untracked.vstring('keep *_*genInfoMaker*_*_*'))
 process.out.outputCommands.extend(cms.untracked.vstring('keep *_TriggerResults_*_*'))
-process.out.outputCommands.extend(cms.untracked.vstring('keep *_hltAK4PFJets*_*_*'))
+#process.out.outputCommands.extend(cms.untracked.vstring('keep *_hltAK4PFJets*_*_*'))
 #process.out.outputCommands.extend(cms.untracked.vstring('keep *_hltPixelVertices_*_reHLT'))
 #process.out.outputCommands = cms.untracked.vstring( 'keep *_*_*_reHLT' )
 
@@ -7462,7 +7462,7 @@ _customInfo['globalTags'][False] = "auto:run2_mc_GRun"
 _customInfo['inputFiles']={}
 _customInfo['inputFiles'][True]  = "file:RelVal_Raw_GRun_DATA.root"
 _customInfo['inputFiles'][False] = "file:RelVal_Raw_GRun_MC.root"
-_customInfo['maxEvents' ]=  100
+_customInfo['maxEvents' ]=  10
 _customInfo['globalTag' ]= "80X_mcRun2_asymptotic_ForTSGStudies_v1"
 _customInfo['inputFile' ]=  ['/store/mc/RunIIFall15DR76/SMS-T1bbbb_mGluino-1000_mLSP-900_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/GEN-SIM-RAW/25nsFlat10to50NzshcalRaw_76X_mcRun2_asymptotic_v12-v1/70000/CE083DB1-52B0-E511-95C5-0CC47A78A32E.root']
 _customInfo['realData'  ]=  False

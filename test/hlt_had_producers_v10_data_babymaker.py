@@ -7433,7 +7433,7 @@ if 'MessageLogger' in process.__dict__:
 # Output
 process.out = cms.OutputModule(
         "PoolOutputModule",
-        fileName     = cms.untracked.string('ntuple_v10_data_savejets_1k.root'),
+        fileName     = cms.untracked.string('ntuple_v10_data.root'),
         dropMetaData = cms.untracked.string("NONE")
         #SelectEvents = cms.untracked.PSet(
             #SelectEvents = cms.vstring('HLT_L1HTT')
@@ -7446,7 +7446,7 @@ process.out.outputCommands = cms.untracked.vstring( 'drop *' )
 process.out.outputCommands.extend(cms.untracked.vstring('keep *_*babyMaker*_*_*'))
 process.out.outputCommands.extend(cms.untracked.vstring('keep *_*genInfoMaker*_*_*'))
 process.out.outputCommands.extend(cms.untracked.vstring('keep *_TriggerResults_*_*'))
-process.out.outputCommands.extend(cms.untracked.vstring('keep *_hltAK4PFJets*_*_*'))
+#process.out.outputCommands.extend(cms.untracked.vstring('keep *_hltAK4PFJets*_*_*'))
 #process.out.outputCommands.extend(cms.untracked.vstring('keep *_hltPixelVertices_*_reHLT'))
 #process.out.outputCommands = cms.untracked.vstring( 'keep *_*_*_reHLT' )
 
@@ -7459,7 +7459,7 @@ _customInfo['globalTags'][False] = "auto:run2_mc_GRun"
 _customInfo['inputFiles']={}
 _customInfo['inputFiles'][True]  = "file:RelVal_Raw_GRun_DATA.root"
 _customInfo['inputFiles'][False] = "file:RelVal_Raw_GRun_MC.root"
-_customInfo['maxEvents' ]=  1000
+_customInfo['maxEvents' ]=  100
 _customInfo['globalTag' ]= "auto:run2_hlt_GRun"
 _customInfo['inputFile' ]=  ['/store/data/Run2015D/HLTPhysics3/RAW/v1/000/256/801/00000/0052EB22-325E-E511-BE08-02163E014211.root']
 _customInfo['realData'  ]=  True
